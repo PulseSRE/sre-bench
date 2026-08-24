@@ -103,6 +103,12 @@ sre-bench run --adapter sre_bench.baselines.claude_agent:factory --suite core --
 
 Two ways to participate. Full details in [docs/RUNNING.md](docs/RUNNING.md).
 
+**Requires Python ≥ 3.11.** macOS's Xcode-bundled `python3` is 3.9 with a pip too old for editable installs — both fail silently-ish. From a checkout, the reliable path is [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv venv --python 3.12 && uv pip install -e ".[judge,dev]" && source .venv/bin/activate
+```
+
 **1. Submission file** — run the tasks through your own harness, emit trajectories, score them:
 
 ```bash
