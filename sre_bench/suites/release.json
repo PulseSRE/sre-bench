@@ -4,6 +4,7 @@
     {
       "scenario_id": "release_crashloop_triage_fix",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Resolve crashloop via logs + safe restart with verification.",
       "tool_calls": [
         "list_pods",
@@ -23,6 +24,7 @@
     {
       "scenario_id": "release_pending_pod_capacity_recommendation",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Pending pod diagnosis with actionable recommendation.",
       "tool_calls": [
         "list_pods",
@@ -42,6 +44,7 @@
     {
       "scenario_id": "release_security_rbac_least_privilege",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "RBAC audit with least-privilege recommendation.",
       "tool_calls": [
         "scan_rbac_risks",
@@ -59,6 +62,7 @@
     {
       "scenario_id": "release_network_policy_gap",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Detect missing namespace policies and suggest safe deny-all baseline.",
       "tool_calls": [
         "scan_network_policies",
@@ -76,6 +80,7 @@
     {
       "scenario_id": "release_failed_deployment_recovery",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Recover degraded deployment with restart and verification.",
       "tool_calls": [
         "list_resources",
@@ -94,6 +99,7 @@
     {
       "scenario_id": "release_node_pressure_triage",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Identify node pressure and provide actionable workload mitigation.",
       "tool_calls": [
         "list_resources",
@@ -113,6 +119,7 @@
     {
       "scenario_id": "release_cert_expiry_warning",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Detect certificate nearing expiry and suggest renewal sequence.",
       "tool_calls": [
         "get_tls_certificates",
@@ -130,6 +137,7 @@
     {
       "scenario_id": "release_alert_correlation",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Correlate firing alert to affected workload and root cause.",
       "tool_calls": [
         "get_firing_alerts",
@@ -149,6 +157,7 @@
     {
       "scenario_id": "release_gitops_drift_guidance",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Detect GitOps drift and prefer declarative remediation path.",
       "tool_calls": [
         "detect_gitops_drift",
@@ -166,6 +175,7 @@
     {
       "scenario_id": "release_security_summary_actionable",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Provide actionable prioritized security summary without unsafe claims.",
       "tool_calls": [
         "get_security_summary",
@@ -184,6 +194,7 @@
     {
       "scenario_id": "release_quota_exhaustion_plan",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Diagnose quota exhaustion and provide clear recovery plan.",
       "tool_calls": [
         "list_resources",
@@ -201,6 +212,11 @@
     {
       "scenario_id": "release_showcase_all_component_types",
       "category": "sre",
+      "expected_behavior": "fix",
+      "call_budget": [
+        4,
+        9
+      ],
       "description": "Create a view that uses every component type including Phase 2 investigation components.",
       "tool_calls": [
         "get_node_metrics",
@@ -223,6 +239,7 @@
     {
       "scenario_id": "release_rollback_bad_deployment",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Rollback a broken deployment to last known good revision with verification.",
       "tool_calls": [
         "list_resources",
@@ -243,6 +260,7 @@
     {
       "scenario_id": "release_cross_agent_handoff",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "SRE triage hands off to security scan when RBAC misconfiguration is the root cause.",
       "tool_calls": [
         "list_pods",
@@ -262,6 +280,7 @@
     {
       "scenario_id": "release_image_pull_error_resolution",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Diagnose and resolve image pull errors across multiple pods.",
       "tool_calls": [
         "list_pods",
@@ -281,6 +300,7 @@
     {
       "scenario_id": "release_view_clone_and_modify",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Clone an existing dashboard and modify it by removing and adding widgets.",
       "tool_calls": [
         "get_view_details",
@@ -300,6 +320,7 @@
     {
       "scenario_id": "release_multi_turn_rollback_verify",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Multi-turn: diagnose broken deploy, rollback, then verify healthy \u2014 tests context retention across turns.",
       "tool_calls": [
         "describe_resource",
@@ -319,6 +340,11 @@
     {
       "scenario_id": "release_physical_topology",
       "category": "sre",
+      "expected_behavior": "fix",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Generate physical topology showing hardware utilization with metrics.",
       "tool_calls": [
         "get_topology_graph"
@@ -335,6 +361,11 @@
     {
       "scenario_id": "release_network_topology",
       "category": "sre",
+      "expected_behavior": "fix",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Generate network flow topology for connectivity debugging.",
       "tool_calls": [
         "get_topology_graph"

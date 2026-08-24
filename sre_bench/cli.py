@@ -17,6 +17,16 @@ from .types import SuiteResult, Task, Trajectory
 def _print_result(r: SuiteResult) -> None:
     gate = "PASS" if r.gate_passed else "FAIL"
     print(f"suite={r.suite_name} gate={gate} avg={r.average_overall:.4f} passed={r.passed_count}/{r.scenario_count}")
+    if r.lanes is not None:
+        agent = r.lanes["agent"]
+        verification = r.lanes["rubric_verification"]
+        if agent["scenario_count"]:
+            print(
+                f"  agent lane  {agent['average_overall']:.4f} avg, "
+                f"{agent['passed_count']}/{agent['scenario_count']} passed"
+            )
+        if verification["scenario_count"]:
+            print(f"  rubric-verification  {verification['caught_count']}/{verification['scenario_count']} caught")
     for k, v in r.dimension_averages.items():
         print(f"  {k:<11} {v:.4f}")
     if r.blocker_counts:
@@ -36,6 +46,8 @@ def _tasks_payload(tasks: list[Task], suite: str, description: str) -> dict:
                 "category": t.category,
                 "task": t.task,
                 "negative_example": t.negative_example,
+                "expected_behavior": t.expected_behavior,
+                **({"call_budget": list(t.call_budget)} if t.call_budget is not None else {}),
             }
             for t in tasks
         ],

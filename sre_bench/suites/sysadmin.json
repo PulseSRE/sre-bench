@@ -4,6 +4,7 @@
     {
       "scenario_id": "sysadmin_namespace_overview",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Provide an overview of what is happening in the monitoring namespace.",
       "tool_calls": [
         "namespace_summary",
@@ -22,6 +23,11 @@
     {
       "scenario_id": "sysadmin_crashing_pods",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Find and list pods that are currently crashlooping.",
       "tool_calls": [
         "top_pods_by_restarts"
@@ -38,6 +44,11 @@
     {
       "scenario_id": "sysadmin_firing_alerts",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Check for any currently firing alerts in the cluster.",
       "tool_calls": [
         "get_firing_alerts"
@@ -54,6 +65,7 @@
     {
       "scenario_id": "sysadmin_node_pressure",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Identify nodes experiencing resource pressure conditions.",
       "tool_calls": [
         "list_resources",
@@ -71,6 +83,11 @@
     {
       "scenario_id": "sysadmin_cluster_cpu_usage",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Show cluster-wide CPU usage metrics.",
       "tool_calls": [
         "get_node_metrics"
@@ -87,6 +104,11 @@
     {
       "scenario_id": "sysadmin_unready_deployments",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "List deployments that are not fully ready or available.",
       "tool_calls": [
         "list_resources"
@@ -103,6 +125,11 @@
     {
       "scenario_id": "sysadmin_recent_events",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Show cluster events from the last hour.",
       "tool_calls": [
         "get_events"
@@ -119,6 +146,11 @@
     {
       "scenario_id": "sysadmin_resource_quotas",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Show resource quotas for the production namespace.",
       "tool_calls": [
         "list_resources"
@@ -135,6 +167,11 @@
     {
       "scenario_id": "sysadmin_degraded_operators",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Check for degraded cluster operators.",
       "tool_calls": [
         "get_cluster_operators"
@@ -151,6 +188,11 @@
     {
       "scenario_id": "sysadmin_top_restarts",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "List pods with the highest restart counts across the cluster.",
       "tool_calls": [
         "top_pods_by_restarts"
@@ -167,6 +209,7 @@
     {
       "scenario_id": "sysadmin_crashloop_diagnosis",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Diagnose why a specific pod is crashlooping by inspecting its status and logs.",
       "tool_calls": [
         "describe_pod",
@@ -184,6 +227,7 @@
     {
       "scenario_id": "sysadmin_high_cpu_investigation",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Investigate high CPU usage in a specific namespace by querying metrics and identifying hot pods.",
       "tool_calls": [
         "get_prometheus_query",
@@ -201,6 +245,7 @@
     {
       "scenario_id": "sysadmin_create_monitoring_dashboard",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Gather namespace monitoring data and create a dashboard for it.",
       "tool_calls": [
         "namespace_summary",
@@ -220,6 +265,7 @@
     {
       "scenario_id": "sysadmin_cluster_readiness_check",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Assess overall cluster readiness for production workloads.",
       "tool_calls": [
         "get_cluster_operators",
@@ -239,6 +285,11 @@
     {
       "scenario_id": "sysadmin_recent_changes_audit",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Audit what changed in the cluster in the last hour.",
       "tool_calls": [
         "get_recent_changes"
@@ -255,6 +306,11 @@
     {
       "scenario_id": "sysadmin_list_services",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "List all services running in the default namespace.",
       "tool_calls": [
         "list_resources"
@@ -271,6 +327,7 @@
     {
       "scenario_id": "sysadmin_node_health_dashboard",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Build a node health dashboard by gathering node status and metrics.",
       "tool_calls": [
         "list_resources",
@@ -289,6 +346,11 @@
     {
       "scenario_id": "sysadmin_compare_namespace_cpu",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Compare CPU usage between two namespaces using Prometheus queries.",
       "tool_calls": [
         "get_prometheus_query"
@@ -305,6 +367,11 @@
     {
       "scenario_id": "sysadmin_tls_certificate_expiry",
       "category": "security",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Check for TLS certificates that are expiring soon.",
       "tool_calls": [
         "get_tls_certificates"
@@ -321,6 +388,7 @@
     {
       "scenario_id": "sysadmin_hpa_scaling_events",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Review HPA scaling events to understand autoscaling behavior today.",
       "tool_calls": [
         "list_hpas",

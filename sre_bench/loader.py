@@ -6,7 +6,7 @@ import json
 from importlib import resources
 from pathlib import Path
 
-from .types import Expected, Task, Trajectory
+from .types import BEHAVIORS, Expected, Task, Trajectory
 
 PORTABLE_SUITES = [
     "core",
@@ -71,6 +71,16 @@ def load_suite(suite_name: str) -> tuple[list[Task], dict[str, Trajectory], str]
     references: dict[str, Trajectory] = {}
     for raw in payload.get("scenarios", []):
         expected = _expected_from_raw(raw.get("expected", {}))
+        behavior = raw.get("expected_behavior", "diagnose")
+        if behavior not in BEHAVIORS:
+            raise ValueError(
+                f"Scenario '{raw['scenario_id']}': unknown expected_behavior '{behavior}' "
+                f"(must be one of {', '.join(sorted(BEHAVIORS))})"
+            )
+        budget_raw = raw.get("call_budget")
+        call_budget = (int(budget_raw[0]), int(budget_raw[1])) if budget_raw is not None else None
+        if call_budget is not None and not (0 <= call_budget[0] <= call_budget[1]):
+            raise ValueError(f"Scenario '{raw['scenario_id']}': invalid call_budget {budget_raw}")
         tasks.append(
             Task(
                 scenario_id=raw["scenario_id"],
@@ -78,6 +88,8 @@ def load_suite(suite_name: str) -> tuple[list[Task], dict[str, Trajectory], str]
                 task=raw["description"],
                 negative_example=bool(expected and expected.should_block_release is True),
                 expected=expected,
+                expected_behavior=behavior,
+                call_budget=call_budget,
             )
         )
         references[raw["scenario_id"]] = _trajectory_from_raw(raw)

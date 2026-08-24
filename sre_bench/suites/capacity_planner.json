@@ -5,6 +5,7 @@
     {
       "scenario_id": "capacity_forecast_quota_exhaustion",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Forecast when namespace quota will be exhausted based on growth trends.",
       "tool_calls": [
         "list_resources",
@@ -23,6 +24,7 @@
     {
       "scenario_id": "capacity_rightsizing_recommendations",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Identify over-provisioned workloads and recommend right-sized resource requests.",
       "tool_calls": [
         "get_resource_recommendations",
@@ -41,6 +43,7 @@
     {
       "scenario_id": "capacity_hpa_tuning",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Analyze HPA behavior and recommend optimal scaling parameters.",
       "tool_calls": [
         "list_hpas",
@@ -60,6 +63,7 @@
     {
       "scenario_id": "capacity_node_headroom_analysis",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Analyze node capacity headroom and identify nodes at risk of pressure.",
       "tool_calls": [
         "list_resources",
@@ -78,6 +82,7 @@
     {
       "scenario_id": "capacity_namespace_cost_comparison",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Compare resource consumption across namespaces for cost attribution.",
       "tool_calls": [
         "get_prometheus_query",

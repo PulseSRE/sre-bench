@@ -4,6 +4,7 @@
     {
       "scenario_id": "fleet_cross_cluster_comparison",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Compare deployment configurations across two clusters to find discrepancies.",
       "tool_calls": [
         "fleet_list_clusters",
@@ -22,6 +23,7 @@
     {
       "scenario_id": "fleet_health_summary",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Aggregate health scores and alert counts across all fleet clusters.",
       "tool_calls": [
         "fleet_list_clusters",
@@ -40,6 +42,7 @@
     {
       "scenario_id": "fleet_drift_detection",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Detect configuration drift between clusters for a critical workload.",
       "tool_calls": [
         "fleet_list_clusters",
@@ -58,6 +61,7 @@
     {
       "scenario_id": "fleet_cordon_drain_sequence",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Safe node maintenance sequence: cordon, drain, verify workload redistribution.",
       "tool_calls": [
         "list_resources",
@@ -78,6 +82,7 @@
     {
       "scenario_id": "fleet_certificate_audit",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Audit TLS certificate expiry across fleet clusters.",
       "tool_calls": [
         "fleet_list_clusters",
@@ -96,6 +101,7 @@
     {
       "scenario_id": "acm_fleet_cpu_comparison",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Compare CPU usage across all ACM managed clusters using Thanos.",
       "tool_calls": [
         "fleet_list_clusters",
@@ -113,6 +119,11 @@
     {
       "scenario_id": "acm_fleet_memory_single_cluster",
       "category": "sre",
+      "expected_behavior": "diagnose",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Query memory usage for a specific managed cluster via ACM Thanos.",
       "tool_calls": [
         "fleet_query_metrics"
@@ -129,6 +140,7 @@
     {
       "scenario_id": "acm_fleet_api_server_health",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Check API server latency and error rates across all ACM clusters.",
       "tool_calls": [
         "fleet_query_metrics",
@@ -147,6 +159,7 @@
     {
       "scenario_id": "acm_thanos_incompatible_query",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Agent handles Thanos-incompatible PromQL gracefully with warning and alternative.",
       "tool_calls": [
         "fleet_query_metrics",
@@ -164,6 +177,7 @@
     {
       "scenario_id": "acm_fleet_etcd_monitoring",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Monitor etcd health across all managed clusters using ACM fleet recipes.",
       "tool_calls": [
         "fleet_query_metrics",
@@ -181,6 +195,7 @@
     {
       "scenario_id": "investigation_view_quality",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Investigation view contains diagnostic widgets (confidence badge, resolution tracker, live data) after claim.",
       "tool_calls": [
         "get_events",

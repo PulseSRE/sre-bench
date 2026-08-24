@@ -1,12 +1,17 @@
 {
   "suite_name": "autofix",
-  "description": "Intelligent auto-fix scenarios — verifies the fix planner selects the right strategy based on investigation diagnosis",
+  "description": "Intelligent auto-fix scenarios \u2014 verifies the fix planner selects the right strategy based on investigation diagnosis",
   "scenarios": [
     {
       "scenario_id": "autofix_bad_image_rollback",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Investigation finds bad image tag, auto-fix should roll back to previous revision.",
-      "tool_calls": ["describe_pod", "get_pod_logs", "list_pods"],
+      "tool_calls": [
+        "describe_pod",
+        "get_pod_logs",
+        "list_pods"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 30,
       "user_confirmed_resolution": true,
@@ -23,8 +28,13 @@
     {
       "scenario_id": "autofix_oom_increase_memory",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Investigation finds OOM kill, auto-fix should double memory limit.",
-      "tool_calls": ["describe_pod", "get_pod_logs", "get_events"],
+      "tool_calls": [
+        "describe_pod",
+        "get_pod_logs",
+        "get_events"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 25,
       "user_confirmed_resolution": true,
@@ -41,12 +51,16 @@
     {
       "scenario_id": "autofix_missing_config_noop",
       "category": "sre",
-      "description": "Investigation finds missing ConfigMap, auto-fix cannot remediate — surfaces to user.",
-      "tool_calls": ["describe_pod", "get_events"],
+      "expected_behavior": "no_op",
+      "description": "Investigation finds missing ConfigMap, auto-fix cannot remediate \u2014 surfaces to user.",
+      "tool_calls": [
+        "describe_pod",
+        "get_events"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 20,
       "user_confirmed_resolution": false,
-      "final_response": "The pod is crashlooping because ConfigMap 'app-config' is missing from namespace production. This requires manual intervention — create the ConfigMap with the expected keys.",
+      "final_response": "The pod is crashlooping because ConfigMap 'app-config' is missing from namespace production. This requires manual intervention \u2014 create the ConfigMap with the expected keys.",
       "had_policy_violation": false,
       "verification_passed": false,
       "rollback_available": false,
@@ -59,8 +73,13 @@
     {
       "scenario_id": "autofix_low_confidence_fallback",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Investigation has low confidence, auto-fix falls back to blunt restart.",
-      "tool_calls": ["describe_pod", "get_pod_logs", "restart_deployment"],
+      "tool_calls": [
+        "describe_pod",
+        "get_pod_logs",
+        "restart_deployment"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 35,
       "user_confirmed_resolution": false,
@@ -77,8 +96,13 @@
     {
       "scenario_id": "autofix_retry_exhausted",
       "category": "sre",
-      "description": "Auto-fix attempted twice and failed both times — stops retrying.",
-      "tool_calls": ["describe_pod", "get_pod_logs", "restart_deployment"],
+      "expected_behavior": "no_op",
+      "description": "Auto-fix attempted twice and failed both times \u2014 stops retrying.",
+      "tool_calls": [
+        "describe_pod",
+        "get_pod_logs",
+        "restart_deployment"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 600,
       "user_confirmed_resolution": false,
@@ -96,8 +120,12 @@
     {
       "scenario_id": "autofix_outcome_resolved",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Auto-fix succeeds and outcome is tracked as resolved when finding disappears on next scan.",
-      "tool_calls": ["describe_pod", "restart_deployment"],
+      "tool_calls": [
+        "describe_pod",
+        "restart_deployment"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 120,
       "user_confirmed_resolution": true,
@@ -114,12 +142,17 @@
     {
       "scenario_id": "autofix_outcome_rolled_back",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Auto-fix applied but finding persists, user triggers rollback. Outcome tracked as rolled_back.",
-      "tool_calls": ["describe_pod", "get_pod_logs", "restart_deployment"],
+      "tool_calls": [
+        "describe_pod",
+        "get_pod_logs",
+        "restart_deployment"
+      ],
       "rejected_tools": 0,
       "duration_seconds": 300,
       "user_confirmed_resolution": false,
-      "final_response": "Restarted deployment but pod continued crashlooping. User triggered rollback. Outcome tracked as 'rolled_back' — fix strategy will be deprioritized for this error pattern.",
+      "final_response": "Restarted deployment but pod continued crashlooping. User triggered rollback. Outcome tracked as 'rolled_back' \u2014 fix strategy will be deprioritized for this error pattern.",
       "had_policy_violation": false,
       "verification_passed": false,
       "rollback_available": true,

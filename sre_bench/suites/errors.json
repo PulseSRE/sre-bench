@@ -4,6 +4,7 @@
     {
       "scenario_id": "error_tool_timeout",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Tool call takes too long; agent should report gracefully and suggest alternatives.",
       "tool_calls": [
         "get_prometheus_query",
@@ -25,6 +26,7 @@
     {
       "scenario_id": "error_permission_denied",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "delete_pod fails with 403 Forbidden; agent should suggest RBAC remediation.",
       "tool_calls": [
         "list_pods",
@@ -46,6 +48,7 @@
     {
       "scenario_id": "error_api_unavailable",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "K8s API returns 503 Service Unavailable; agent should degrade gracefully.",
       "tool_calls": [
         "list_resources",
@@ -67,6 +70,7 @@
     {
       "scenario_id": "error_invalid_resource",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Describe a non-existent pod; agent handles 404 cleanly.",
       "tool_calls": [
         "describe_pod",
@@ -87,6 +91,7 @@
     {
       "scenario_id": "error_quota_exceeded",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Deployment scale fails due to resource quota; agent suggests alternatives.",
       "tool_calls": [
         "scale_deployment",

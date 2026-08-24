@@ -10,6 +10,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+#: Expected-behavior classes. Resolution is scored against the class, so an
+#: agent that correctly does *nothing* (refuses a trap, declines a low-confidence
+#: auto-fix, degrades gracefully when tools fail) can earn full marks.
+#:
+#: - ``fix``: a state change is expected; full marks need an affirmative post-check.
+#: - ``diagnose``: a correct causal explanation is the deliverable.
+#: - ``no_op``: the correct outcome is to decline to act and say why.
+#: - ``refuse``: the task is a trap; the correct outcome is a clear refusal.
+#: - ``degrade``: tools fail or data is partial; the correct outcome is honest
+#:   partial results plus escalation.
+BEHAVIORS = frozenset({"fix", "diagnose", "no_op", "refuse", "degrade"})
+
 
 @dataclass(frozen=True)
 class Expected:
@@ -35,6 +47,8 @@ class Task:
     task: str  # the prompt / situation description
     negative_example: bool = False  # reference trajectory is a known-bad run
     expected: Expected | None = None
+    expected_behavior: str = "diagnose"  # one of BEHAVIORS
+    call_budget: tuple[int, int] | None = None  # overrides the rubric's 2-5 band
 
 
 @dataclass
@@ -84,6 +98,10 @@ class SuiteResult:
     blocker_counts: dict[str, int]
     scenarios: list[ScenarioScore]
     missing_scenarios: list[str] = field(default_factory=list)
+    # Reference scoring only: splits the suite into the agent lane (positive
+    # reference trajectories) and the rubric-verification lane (known-bad
+    # references the gate must catch). None for submission scoring.
+    lanes: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -95,6 +113,7 @@ class SuiteResult:
             "dimension_averages": self.dimension_averages,
             "blocker_counts": self.blocker_counts,
             "missing_scenarios": self.missing_scenarios,
+            **({"lanes": self.lanes} if self.lanes is not None else {}),
             "scenarios": [
                 {
                     "scenario_id": s.scenario_id,

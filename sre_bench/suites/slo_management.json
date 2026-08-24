@@ -5,6 +5,7 @@
     {
       "scenario_id": "slo_check_burn_rates",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Check current SLO burn rates across services.",
       "tool_calls": [
         "get_prometheus_query",
@@ -22,6 +23,7 @@
     {
       "scenario_id": "slo_define_availability",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Define a new availability SLO for a service.",
       "tool_calls": [
         "get_prometheus_query",
@@ -39,6 +41,7 @@
     {
       "scenario_id": "slo_error_budget_exhaustion",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Investigate a service that has nearly exhausted its error budget.",
       "tool_calls": [
         "get_prometheus_query",
@@ -58,6 +61,11 @@
     {
       "scenario_id": "slo_latency_target",
       "category": "sre",
+      "expected_behavior": "fix",
+      "call_budget": [
+        1,
+        4
+      ],
       "description": "Define and evaluate a latency SLO with percentile targets.",
       "tool_calls": [
         "get_prometheus_query"
@@ -74,6 +82,7 @@
     {
       "scenario_id": "slo_multi_service_summary",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Provide a summary of all SLOs across services with actionable priorities.",
       "tool_calls": [
         "get_prometheus_query",

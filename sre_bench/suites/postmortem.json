@@ -5,6 +5,7 @@
     {
       "scenario_id": "postmortem_crashloop_incident",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Generate postmortem from a crashloop incident with clear root cause.",
       "tool_calls": [
         "list_pods",
@@ -24,6 +25,7 @@
     {
       "scenario_id": "postmortem_oom_incident",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Generate postmortem from an OOM kill incident with memory analysis.",
       "tool_calls": [
         "describe_pod",
@@ -43,6 +45,7 @@
     {
       "scenario_id": "postmortem_node_failure",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Generate postmortem from a node failure affecting multiple workloads.",
       "tool_calls": [
         "list_resources",
@@ -63,6 +66,7 @@
     {
       "scenario_id": "postmortem_deployment_rollout_failure",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Generate postmortem from a failed deployment rollout with rollback.",
       "tool_calls": [
         "describe_resource",
@@ -82,6 +86,7 @@
     {
       "scenario_id": "postmortem_with_contributing_factors",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Generate postmortem with multiple contributing factors and cascading failures.",
       "tool_calls": [
         "get_firing_alerts",

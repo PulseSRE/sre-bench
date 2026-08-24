@@ -4,6 +4,7 @@
     {
       "scenario_id": "integration_transient_api_recovery",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Recovers from transient K8s API failures with retries.",
       "tool_calls": [
         "list_pods",
@@ -22,6 +23,7 @@
     {
       "scenario_id": "integration_partial_data_handling",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Handles missing fields and partial payloads gracefully.",
       "tool_calls": [
         "list_resources",
@@ -39,6 +41,7 @@
     {
       "scenario_id": "integration_timeout_degradation",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Timeout path returns incomplete run and should fail reliability gate.",
       "tool_calls": [
         "get_prometheus_query"
@@ -59,6 +62,7 @@
     {
       "scenario_id": "integration_critical_investigation_generated",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Critical finding triggers proactive read-only investigation and root-cause summary.",
       "tool_calls": [
         "list_pods",
@@ -78,6 +82,7 @@
     {
       "scenario_id": "integration_investigation_timeout_handled",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Investigation timeout is reported cleanly and does not break monitor loop.",
       "tool_calls": [
         "list_pods",
@@ -95,6 +100,7 @@
     {
       "scenario_id": "integration_post_fix_verification_signal",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Completed action is verified on the next scan and status is attached to history.",
       "tool_calls": [
         "restart_deployment",
@@ -112,6 +118,7 @@
     {
       "scenario_id": "integration_daemonset_gap_detection",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Detect DaemonSet pods missing from nodes and diagnose scheduling failures.",
       "tool_calls": [
         "list_pods",
@@ -131,6 +138,7 @@
     {
       "scenario_id": "integration_rbac_audit_change_detection",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Detect recent RBAC changes and assess risk of privilege escalation.",
       "tool_calls": [
         "get_recent_changes",
@@ -149,6 +157,7 @@
     {
       "scenario_id": "integration_incident_correlation_timeline",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Correlate multiple signals into a single incident timeline.",
       "tool_calls": [
         "get_firing_alerts",
@@ -168,6 +177,7 @@
     {
       "scenario_id": "integration_hpa_thrashing_diagnosis",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Diagnose HPA oscillation and recommend stable scaling parameters.",
       "tool_calls": [
         "list_hpas",
@@ -187,6 +197,7 @@
     {
       "scenario_id": "integration_warning_events_triage",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Triage cluster warning events and identify actionable patterns.",
       "tool_calls": [
         "get_events",
@@ -205,6 +216,7 @@
     {
       "scenario_id": "integration_auth_anomaly_detection",
       "category": "security",
+      "expected_behavior": "diagnose",
       "description": "Detect authentication anomalies and assess unauthorized access risk.",
       "tool_calls": [
         "get_events",
@@ -223,6 +235,11 @@
     {
       "scenario_id": "integration_all_component_types_view",
       "category": "sre",
+      "expected_behavior": "fix",
+      "call_budget": [
+        4,
+        9
+      ],
       "description": "Create a view that uses every component type available.",
       "tool_calls": [
         "list_pods",
@@ -246,6 +263,7 @@
     {
       "scenario_id": "integration_parallel_sre_security",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Compound SRE+Security query triggers parallel multi-skill execution and synthesis.",
       "tool_calls": [
         "list_pods",
@@ -266,6 +284,7 @@
     {
       "scenario_id": "integration_multi_skill_empty_output_fallback",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "One skill times out during parallel execution \u2014 synthesis is skipped, non-empty output used with warning.",
       "tool_calls": [
         "list_pods",
@@ -284,6 +303,7 @@
     {
       "scenario_id": "integration_multi_skill_conflict_detection",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Parallel skills produce conflicting diagnoses that are surfaced for human arbitration.",
       "tool_calls": [
         "list_pods",
@@ -304,6 +324,7 @@
     {
       "scenario_id": "integration_compound_intent_routing",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Compound query with 'and also' correctly splits into two skill domains.",
       "tool_calls": [
         "list_pods",
@@ -323,6 +344,7 @@
     {
       "scenario_id": "integration_multi_skill_orca_score_gap",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Natural cross-domain query triggers multi-skill via ORCA score gap without explicit compound syntax.",
       "tool_calls": [
         "list_pods",
@@ -343,6 +365,7 @@
     {
       "scenario_id": "integration_multi_skill_implicit_crossdomain",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Implicit cross-domain query (mentions security policy change) activates both SRE and security skills.",
       "tool_calls": [
         "get_firing_alerts",
@@ -363,6 +386,7 @@
     {
       "scenario_id": "integration_single_skill_stays_single",
       "category": "sre",
+      "expected_behavior": "diagnose",
       "description": "Pure single-domain SRE query does NOT activate multi-skill \u2014 control case.",
       "tool_calls": [
         "list_pods",
@@ -382,6 +406,7 @@
     {
       "scenario_id": "integration_inbox_action_plan_step_execution",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Execute an inbox action plan step \u2014 agent uses the suggested tool and reports results for step completion.",
       "tool_calls": [
         "list_pods",
@@ -400,6 +425,7 @@
     {
       "scenario_id": "integration_inbox_action_plan_multi_step",
       "category": "sre",
+      "expected_behavior": "fix",
       "description": "Complete multiple action plan steps sequentially \u2014 each step uses correct tools and reports progress.",
       "tool_calls": [
         "list_pods",
@@ -419,6 +445,7 @@
     {
       "scenario_id": "integration_inbox_action_plan_step_failure",
       "category": "sre",
+      "expected_behavior": "degrade",
       "description": "Action plan step fails gracefully \u2014 agent reports failure and suggests retry or alternative approach.",
       "tool_calls": [
         "scale_deployment",

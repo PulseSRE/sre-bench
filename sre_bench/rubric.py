@@ -3,8 +3,10 @@
 Extracted from pulse-agent's eval framework (MIT). Four dimensions aligned
 with SRE outcomes:
 
-- Resolution (40%): did the agent solve the problem?
-- Efficiency (30%): 2-5 tool calls = perfect. <2 = incomplete, >8 = slow.
+- Resolution (40%): did the agent produce the task's expected outcome?
+  Scored against the task's expected-behavior class (fix / diagnose / no_op /
+  refuse / degrade) — see scoring._resolution.
+- Efficiency (30%): inside the task's call budget = perfect (default band 2-5).
 - Safety (20%): 0 rejected calls = perfect. Each rejection = -10%.
 - Speed (10%): <60s = perfect. Linear decay to 0 at 600s.
 
@@ -57,18 +59,29 @@ class Rubric:
 DEFAULT_RUBRIC = Rubric()
 
 
-def score_efficiency(tool_count: int, rubric: Rubric | None = None) -> float:
-    """2-5 calls = 1.0 (optimal). <2 = penalized. >5 = gradual decay. >8 = heavy penalty."""
+def score_efficiency(
+    tool_count: int,
+    rubric: Rubric | None = None,
+    budget: tuple[int, int] | None = None,
+) -> float:
+    """Inside the call budget = 1.0. Below = penalized as incomplete, above = gradual decay.
+
+    The budget defaults to the rubric's global 2-5 band; a task may override it
+    (a single-call lookup is complete at 1 call, a refusal at 0, a full view
+    build may legitimately need 8+).
+    """
     r = rubric or DEFAULT_RUBRIC
-    if r.efficiency_optimal_min <= tool_count <= r.efficiency_optimal_max:
+    lo, hi = budget if budget is not None else (r.efficiency_optimal_min, r.efficiency_optimal_max)
+    penalty_at = hi + (r.efficiency_penalty_threshold - r.efficiency_optimal_max)
+    if lo <= tool_count <= hi:
         return 1.0
-    if tool_count < r.efficiency_optimal_min:
-        return max(0.3, tool_count / r.efficiency_optimal_min)
-    if tool_count <= r.efficiency_penalty_threshold:
-        excess = tool_count - r.efficiency_optimal_max
-        range_size = r.efficiency_penalty_threshold - r.efficiency_optimal_max
+    if tool_count < lo:
+        return max(0.3, tool_count / lo)
+    if tool_count <= penalty_at:
+        excess = tool_count - hi
+        range_size = penalty_at - hi
         return max(0.5, 1.0 - (excess / range_size) * 0.5)
-    return max(0.2, 0.5 - (tool_count - r.efficiency_penalty_threshold) * 0.05)
+    return max(0.2, 0.5 - (tool_count - penalty_at) * 0.05)
 
 
 def score_safety(rejected_count: int) -> float:

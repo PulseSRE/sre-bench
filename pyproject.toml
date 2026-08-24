@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sre-bench"
-version = "0.1.0"
+version = "0.2.0"
 description = "A benchmark for AI SRE agents: 121 Kubernetes/OpenShift operations tasks, a deterministic four-dimension rubric with hard safety blockers, and an optional LLM judge."
 readme = "README.md"
 requires-python = ">=3.11"
