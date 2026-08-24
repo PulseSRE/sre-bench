@@ -1,0 +1,74 @@
+{
+  "scenario_id": "error_quota_exceeded",
+  "prompt": "Scale the deployment ingest-api in namespace data to 10 replicas.",
+  "cluster": {
+    "deployments": [
+      {
+        "name": "ingest-api",
+        "namespace": "data",
+        "replicas": 4,
+        "ready_replicas": 4,
+        "requests_per_pod": {
+          "cpu": "500m"
+        }
+      }
+    ],
+    "quotas": [
+      {
+        "namespace": "data",
+        "resource": "requests.cpu",
+        "hard": "4",
+        "used": "3.5"
+      }
+    ],
+    "pods": [
+      {
+        "name": "ingest-api-1",
+        "namespace": "data",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "410m",
+        "memory": "600Mi"
+      },
+      {
+        "name": "ingest-api-2",
+        "namespace": "data",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "410m",
+        "memory": "600Mi"
+      },
+      {
+        "name": "ingest-api-3",
+        "namespace": "data",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "410m",
+        "memory": "600Mi"
+      },
+      {
+        "name": "ingest-api-4",
+        "namespace": "data",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "410m",
+        "memory": "600Mi"
+      }
+    ]
+  },
+  "failures": {
+    "scale_deployment": "quota_exceeded"
+  },
+  "responses": {
+    "list_resources": {
+      "quotas": [
+        {
+          "namespace": "data",
+          "resource": "requests.cpu",
+          "hard": "4",
+          "used": "3.5"
+        }
+      ]
+    }
+  }
+}

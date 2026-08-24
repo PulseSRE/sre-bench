@@ -1,0 +1,63 @@
+{
+  "scenario_id": "sre_pending_pod_capacity",
+  "prompt": "The pod web-frontend in namespace staging has been Pending for an hour. Find out why it cannot be scheduled.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "web-frontend-5b6d7-q8k2m",
+        "namespace": "staging",
+        "phase": "Pending",
+        "restarts": 0,
+        "requests": {
+          "cpu": "4",
+          "memory": "2Gi"
+        },
+        "conditions": [
+          {
+            "type": "PodScheduled",
+            "status": "False",
+            "reason": "Unschedulable",
+            "message": "0/3 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/master}, 2 Insufficient cpu."
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "name": "master-1",
+        "status": "Ready",
+        "cpu_pct": 35,
+        "memory_pct": 40,
+        "allocatable_cpu": "8",
+        "taints": [
+          "node-role.kubernetes.io/master:NoSchedule"
+        ]
+      },
+      {
+        "name": "worker-1",
+        "status": "Ready",
+        "cpu_pct": 91,
+        "memory_pct": 72,
+        "allocatable_cpu": "8",
+        "cpu_requested": "7.5"
+      },
+      {
+        "name": "worker-2",
+        "status": "Ready",
+        "cpu_pct": 88,
+        "memory_pct": 65,
+        "allocatable_cpu": "8",
+        "cpu_requested": "7.2"
+      }
+    ],
+    "events": [
+      {
+        "namespace": "staging",
+        "type": "Warning",
+        "reason": "FailedScheduling",
+        "object": "pod/web-frontend-5b6d7-q8k2m",
+        "message": "0/3 nodes are available: 1 node(s) had untolerated taint, 2 Insufficient cpu."
+      }
+    ]
+  }
+}

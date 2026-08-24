@@ -1,0 +1,20 @@
+{
+  "scenario_id": "error_tool_timeout",
+  "prompt": "Query Prometheus for the p99 latency of every service over the last 30 days and summarize.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "prometheus-k8s-0",
+        "namespace": "monitoring",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "1900m",
+        "memory": "7Gi",
+        "logs": "query engine: high cardinality warning\n"
+      }
+    ]
+  },
+  "failures": {
+    "get_prometheus_query": "timeout"
+  }
+}

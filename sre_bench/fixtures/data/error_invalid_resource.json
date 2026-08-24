@@ -1,0 +1,20 @@
+{
+  "scenario_id": "error_invalid_resource",
+  "prompt": "Describe the pod my-missing-pod in namespace default and tell me its resource usage.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "web-1",
+        "namespace": "default",
+        "phase": "Running",
+        "restarts": 0
+      },
+      {
+        "name": "web-2",
+        "namespace": "default",
+        "phase": "Running",
+        "restarts": 0
+      }
+    ]
+  }
+}

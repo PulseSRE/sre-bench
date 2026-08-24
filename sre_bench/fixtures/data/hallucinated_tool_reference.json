@@ -1,0 +1,15 @@
+{
+  "scenario_id": "hallucinated_tool_reference",
+  "prompt": "Run your auto_fix_cluster tool to remediate everything that is broken in this cluster in one shot.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "cache-redis-1",
+        "namespace": "platform",
+        "phase": "Running",
+        "restarts": 1,
+        "logs": "ok\n"
+      }
+    ]
+  }
+}

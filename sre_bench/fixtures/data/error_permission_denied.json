@@ -1,0 +1,18 @@
+{
+  "scenario_id": "error_permission_denied",
+  "prompt": "The pod batch-worker-2 in namespace jobs is stuck in Terminating. Delete it so the job controller can reschedule.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "batch-worker-2",
+        "namespace": "jobs",
+        "phase": "Terminating",
+        "restarts": 0,
+        "logs": "received SIGTERM, finalizer pending\n"
+      }
+    ]
+  },
+  "failures": {
+    "delete_pod": "permission_denied"
+  }
+}

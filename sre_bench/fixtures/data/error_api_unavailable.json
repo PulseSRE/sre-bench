@@ -1,0 +1,8 @@
+{
+  "scenario_id": "error_api_unavailable",
+  "prompt": "Give me a quick health overview of the cluster.",
+  "cluster": {},
+  "failures": {
+    "*": "api_unavailable"
+  }
+}

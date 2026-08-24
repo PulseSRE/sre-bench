@@ -94,13 +94,80 @@ def _score_one(args: argparse.Namespace, suite: str, trajectories: dict[str, Tra
     return result
 
 
+def _variance_payload(suites: list[str], per_run: list[list[SuiteResult]]) -> dict:
+    import statistics
+
+    payload: dict = {"runs": len(per_run), "suites": []}
+    for idx, suite in enumerate(suites):
+        results = [run[idx] for run in per_run]
+        overalls = [r.average_overall for r in results]
+        scenario_stats = []
+        by_id: dict[str, list[float]] = {}
+        for r in results:
+            for s in r.scenarios:
+                by_id.setdefault(s.scenario_id, []).append(s.overall)
+        for sid, vals in sorted(by_id.items()):
+            stdev = statistics.stdev(vals) if len(vals) > 1 else 0.0
+            scenario_stats.append(
+                {
+                    "scenario_id": sid,
+                    "runs": len(vals),
+                    "mean": round(statistics.mean(vals), 4),
+                    "stdev": round(stdev, 4),
+                }
+            )
+        payload["suites"].append(
+            {
+                "suite_name": suite,
+                "gate_passed_runs": sum(1 for r in results if r.gate_passed),
+                "average_overall": {
+                    "mean": round(statistics.mean(overalls), 4),
+                    "stdev": round(statistics.stdev(overalls), 4) if len(overalls) > 1 else 0.0,
+                    "min": min(overalls),
+                    "max": max(overalls),
+                },
+                "scenarios": scenario_stats,
+            }
+        )
+    return payload
+
+
+def _print_variance(payload: dict) -> None:
+    for suite in payload["suites"]:
+        avg = suite["average_overall"]
+        print(
+            f"suite={suite['suite_name']} runs={payload['runs']} "
+            f"gate={suite['gate_passed_runs']}/{payload['runs']} PASS "
+            f"avg mean={avg['mean']:.4f} stdev={avg['stdev']:.4f} min={avg['min']:.4f} max={avg['max']:.4f}"
+        )
+        unstable = [s for s in suite["scenarios"] if s["stdev"] > 0.05]
+        for s in sorted(unstable, key=lambda s: -s["stdev"]):
+            print(f"  unstable    {s['scenario_id']}  mean={s['mean']:.4f} stdev={s['stdev']:.4f}")
+
+
 def cmd_score(args: argparse.Namespace) -> int:
-    trajectories = load_submission(args.submission)
     suites = suite_names() if args.all else [args.suite]
     if not args.all and not args.suite:
         print("error: pass --suite <name> or --all", file=sys.stderr)
         return 2
-    results = [_score_one(args, s, trajectories) for s in suites]
+    per_run = [[_score_one(args, s, load_submission(path)) for s in suites] for path in args.submission]
+
+    if len(per_run) > 1:
+        payload = _variance_payload(suites, per_run)
+        if args.json or args.out:
+            text = json.dumps(payload, indent=2)
+            if args.out:
+                Path(args.out).write_text(text + "\n", encoding="utf-8")
+                print(f"Wrote variance report to {args.out}")
+            else:
+                print(text)
+        else:
+            _print_variance(payload)
+        if args.fail_on_gate and any(s["gate_passed_runs"] < payload["runs"] for s in payload["suites"]):
+            return 1
+        return 0
+
+    results = per_run[0]
     if args.json or args.out:
         payload = {"results": [r.to_dict() for r in results]}
         text = json.dumps(payload, indent=2)
@@ -142,17 +209,70 @@ def cmd_run(args: argparse.Namespace) -> int:
         print("error: pass --suite <name> or --all", file=sys.stderr)
         return 2
     all_trajectories: list[Trajectory] = []
+    skipped: list[str] = []
     for s in suites:
         tasks, _refs, _desc = load_suite(s)
-        all_trajectories.extend(run_tasks(agent, tasks))
-    payload = {"trajectories": [dataclasses.asdict(t) for t in all_trajectories]}
+        trajectories = run_tasks(agent, tasks, sim=args.sim)
+        if args.sim:
+            covered = {t.scenario_id for t in trajectories}
+            skipped.extend(t.scenario_id for t in tasks if t.scenario_id not in covered)
+        all_trajectories.extend(trajectories)
+    payload: dict = {"trajectories": [dataclasses.asdict(t) for t in all_trajectories]}
+    if args.sim:
+        payload = {"environment": "sim", **payload}
     Path(args.out).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(all_trajectories)} trajectories to {args.out}")
+    if skipped:
+        more = " …" if len(skipped) > 5 else ""
+        print(f"Skipped {len(skipped)} tasks with no fixture yet: {', '.join(skipped[:5])}" + more)
     if args.score:
         by_id = {t.scenario_id: t for t in all_trajectories}
         for s in suites:
             tasks, _refs, _desc = load_suite(s)
             _print_result(score_submission(s, tasks, by_id))
+    return 0
+
+
+def cmd_fixtures(_: argparse.Namespace) -> int:
+    from .fixtures import fixture_ids
+
+    have = set(fixture_ids())
+    total_tasks = 0
+    total_covered = 0
+    for name in suite_names():
+        tasks, _refs, _desc = load_suite(name)
+        covered = sum(1 for t in tasks if t.scenario_id in have)
+        total_tasks += len(tasks)
+        total_covered += covered
+        marker = "full" if covered == len(tasks) else ("partial" if covered else "-")
+        print(f"{name:<18} {covered:>3}/{len(tasks):<3} {marker}")
+    print(f"{'TOTAL':<18} {total_covered:>3}/{total_tasks:<3}")
+    return 0
+
+
+def cmd_verify(args: argparse.Namespace) -> int:
+    from .verify import VIOLATION, submission_environment, verify_submission
+
+    trajectories = load_submission(args.submission)
+    sim_env = submission_environment(args.submission) == "sim"
+    suites = suite_names() if args.all else [args.suite]
+    if not args.all and not args.suite:
+        print("error: pass --suite <name> or --all", file=sys.stderr)
+        return 2
+    findings = []
+    for s in suites:
+        tasks, _refs, _desc = load_suite(s)
+        findings.extend(verify_submission(tasks, trajectories, sim_env))
+    if args.json:
+        payload = {"environment": "sim" if sim_env else "external", "findings": [f.to_dict() for f in findings]}
+        print(json.dumps(payload, indent=2))
+    else:
+        if not findings:
+            print("verify: clean — no findings")
+        for f in findings:
+            print(f"{f.level.upper():<10} {f.scenario_id}  [{f.check}] {f.detail}")
+    if any(f.level == VIOLATION for f in findings):
+        return 1
     return 0
 
 
@@ -168,7 +288,11 @@ def main(argv: list[str] | None = None) -> int:
     p_tasks.set_defaults(func=cmd_tasks)
 
     p_score = sub.add_parser("score", help="Score a submission (trajectory file) against a suite")
-    p_score.add_argument("submission", help="Path to submission JSON")
+    p_score.add_argument(
+        "submission",
+        nargs="+",
+        help="Path(s) to submission JSON. Multiple files = repeated runs; reports mean/stdev and unstable scenarios",
+    )
     p_score.add_argument("--suite", choices=suite_names())
     p_score.add_argument("--all", action="store_true", help="Score against every suite")
     p_score.add_argument("--judge", action="store_true", help="Also run the LLM judge (needs ANTHROPIC_API_KEY)")
@@ -188,7 +312,21 @@ def main(argv: list[str] | None = None) -> int:
     p_run.add_argument("--all", action="store_true", help="Run every suite")
     p_run.add_argument("--out", required=True, help="Where to write the trajectory file")
     p_run.add_argument("--score", action="store_true", help="Score immediately after running")
+    p_run.add_argument(
+        "--sim",
+        action="store_true",
+        help="Run against the bundled simulated cluster fixtures; flag fields come from the observing backend",
+    )
     p_run.set_defaults(func=cmd_run)
+
+    sub.add_parser("fixtures", help="Show simulated-fixture coverage per suite").set_defaults(func=cmd_fixtures)
+
+    p_verify = sub.add_parser("verify", help="Audit a submission's self-reported flags for structural violations")
+    p_verify.add_argument("submission", help="Path to submission JSON")
+    p_verify.add_argument("--suite", choices=suite_names())
+    p_verify.add_argument("--all", action="store_true", help="Verify against every suite")
+    p_verify.add_argument("--json", action="store_true", help="Print findings as JSON")
+    p_verify.set_defaults(func=cmd_verify)
 
     args = parser.parse_args(argv)
     return args.func(args)

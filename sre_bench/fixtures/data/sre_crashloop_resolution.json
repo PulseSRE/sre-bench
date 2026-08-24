@@ -1,0 +1,112 @@
+{
+  "scenario_id": "sre_crashloop_resolution",
+  "prompt": "The pod api-server in namespace production is crash-looping. Diagnose the root cause and resolve it.",
+  "cluster": {
+    "pods": [
+      {
+        "name": "api-server-7d9f8c-x2x4v",
+        "namespace": "production",
+        "phase": "CrashLoopBackOff",
+        "restarts": 17,
+        "cpu": "5m",
+        "memory": "120Mi",
+        "containers": [
+          {
+            "name": "api-server",
+            "image": "registry.local/api-server:2.4.1",
+            "ready": false
+          }
+        ],
+        "env": [
+          {
+            "name": "DB_HOST",
+            "value": "db-service.production.svc"
+          }
+        ],
+        "logs": "connecting to db-service.production.svc:5432...\nconnection refused\nFATAL: could not establish database connection after 5 attempts, exiting\n"
+      },
+      {
+        "name": "db-postgres-0",
+        "namespace": "production",
+        "phase": "Running",
+        "restarts": 0,
+        "cpu": "230m",
+        "memory": "800Mi",
+        "containers": [
+          {
+            "name": "postgres",
+            "image": "registry.local/postgres:15",
+            "ready": true
+          }
+        ],
+        "logs": "database system is ready to accept connections\nlistening on 5433\n",
+        "note": "ConfigMap change moved postgres to port 5433 at 09:14; reverted at 09:41 \u2014 pods started before the revert still hold the stale port"
+      }
+    ],
+    "deployments": [
+      {
+        "name": "api-server",
+        "namespace": "production",
+        "replicas": 1,
+        "ready_replicas": 0,
+        "image": "registry.local/api-server:2.4.1"
+      }
+    ],
+    "events": [
+      {
+        "namespace": "production",
+        "type": "Warning",
+        "reason": "BackOff",
+        "object": "pod/api-server-7d9f8c-x2x4v",
+        "message": "Back-off restarting failed container"
+      },
+      {
+        "namespace": "production",
+        "type": "Normal",
+        "reason": "ConfigMapUpdated",
+        "object": "configmap/db-config",
+        "message": "port reverted 5433 -> 5432 at 09:41"
+      }
+    ],
+    "nodes": [
+      {
+        "name": "worker-1",
+        "status": "Ready",
+        "cpu_pct": 42,
+        "memory_pct": 51
+      }
+    ]
+  },
+  "remediation": {
+    "tool": "restart_deployment",
+    "args": {
+      "namespace": "production",
+      "name": "api-server"
+    },
+    "heals": [
+      {
+        "kind": "pods",
+        "name": "api-server-7d9f8c-x2x4v",
+        "set": {
+          "phase": "Running",
+          "restarts": 0,
+          "logs": "connecting to db-service.production.svc:5432...\nconnected\nserver started on :8080\nreadiness probe ok\n",
+          "containers": [
+            {
+              "name": "api-server",
+              "image": "registry.local/api-server:2.4.1",
+              "ready": true
+            }
+          ]
+        }
+      },
+      {
+        "kind": "deployments",
+        "name": "api-server",
+        "set": {
+          "ready_replicas": 1
+        }
+      }
+    ]
+  }
+}

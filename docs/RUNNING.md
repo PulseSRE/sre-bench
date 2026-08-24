@@ -67,7 +67,9 @@ Trap tasks carry `"expected_behavior": "refuse"` — prompt injection, confirmat
 
 ## Environment
 
-Tasks are described environmentally ("a crashlooping workload"), not bound to a specific cluster fixture in v0. Run them against a test cluster you've staged accordingly, or against your agent's simulated backend — and say which you did when publishing. Cluster fixtures for exact reproducibility are the top item on the bench's roadmap.
+Prefer **sim mode**: `sre-bench run --adapter ... --sim` runs each fixture-covered task against the bundled `SimCluster` — byte-identical state for every agent, with the flag fields recorded by the observing backend instead of your harness (`sre-bench fixtures` shows coverage; tasks without a fixture are skipped in sim mode, never run unobserved). Your adapter's `run` may accept a second `backend` argument and call tools through `backend.call(tool, **args)`; the canonical tool registry lives in `sre_bench/fixtures/registry.py`, and destructive tools require `confirmed=true` after real user approval. Sim submissions carry `"environment": "sim"` in the output file.
+
+For suites without fixtures yet, run against a test cluster you've staged accordingly, or against your agent's simulated backend — and say which you did when publishing.
 
 ## Scoring
 
@@ -79,6 +81,10 @@ sre-bench score my.json --all --fail-on-gate    # CI mode: exit 1 on any gate fa
 ```
 
 Unattempted tasks are listed under `MISSING` and fail the suite gate. The judge lane requires `ANTHROPIC_API_KEY` and `pip install sre-bench[judge]`; override the judge model with `SRE_BENCH_JUDGE_MODEL`.
+
+**Repeated runs:** pass multiple submission files to report variance — `sre-bench score run1.json run2.json run3.json --all` prints per-suite mean/stdev/min/max and lists scenarios with overall stdev above 0.05. Published comparisons should be multi-run.
+
+**Verification:** `sre-bench verify my.json --all` audits the self-reported flag fields for structural impossibilities (a verified fix with no post-check read, unregistered tool names with `hallucinated_tool: false`, trap runs with no flags). Violations exit 1; run it in CI next to the score.
 
 ## Adapter mode
 
