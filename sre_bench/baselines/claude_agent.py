@@ -135,7 +135,7 @@ class ClaudeBaselineAgent:
             raise
         except anthropic.APIStatusError as exc:
             completed = False
-            final_text = f"API error during run: {exc.status_code}"
+            final_text = f"API error during run: {exc.status_code} — {getattr(exc, 'message', exc)}"
         except anthropic.APIConnectionError:
             completed = False
             final_text = "Network error during run."
