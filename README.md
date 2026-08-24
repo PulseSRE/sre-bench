@@ -93,7 +93,9 @@ It flags, among others: `verification_passed: true` with no read after the last 
 Two reference adapters ship in `sre_bench/baselines/`:
 
 - **`scripted`** — a deterministic rule-based agent; plumbing verification and the adapter example, not a contender. It scores 0.94 on `core` (it has no RBAC logic — real agents should clear it easily).
-- **`claude_agent`** — a plain Claude model handed the sim tool registry with no SRE scaffolding (`pip install sre-bench[judge]`, `ANTHROPIC_API_KEY` required). This is the floor that makes agent scores meaningful: publish your agent's number next to the plain-model number for the same fixtures.
+- **`claude_agent`** — a plain Claude model handed the sim tool registry with no SRE scaffolding. This is the floor that makes agent scores meaningful: publish your agent's number next to the plain-model number for the same fixtures.
+
+Credentials, either of: `ANTHROPIC_API_KEY` (`pip install "sre-bench[judge]"`), or **Google Vertex AI** — set `ANTHROPIC_VERTEX_PROJECT_ID` (+ optional `CLOUD_ML_REGION`, default `global`) with GCP application-default credentials and `pip install "sre-bench[vertex]"`. The env vars match pulse-agent's own Vertex configuration, so an existing Pulse deployment's credentials work as-is.
 
 ```bash
 sre-bench run --adapter sre_bench.baselines.claude_agent:factory --suite core --sim --out claude-baseline.json --score

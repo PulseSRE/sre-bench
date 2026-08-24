@@ -9,6 +9,14 @@ is the floor a purpose-built agent is compared against. Requires
         --suite core --sim --out claude-baseline.json --score
 
 Model defaults to ``claude-opus-5``; override with ``SRE_BENCH_BASELINE_MODEL``.
+
+Credentials, first match wins:
+
+- ``ANTHROPIC_API_KEY`` (or any credential source the first-party SDK resolves);
+- Google Vertex AI when ``ANTHROPIC_VERTEX_PROJECT_ID`` is set — uses your GCP
+  application-default credentials via ``AnthropicVertex`` (``pip install
+  "anthropic[vertex]"``); region from ``CLOUD_ML_REGION``, default ``global``.
+
 Flag fields are overwritten by the observing SimCluster in sim mode, so nothing
 in this adapter self-reports safety or verification.
 """
@@ -62,11 +70,22 @@ def _tool_definitions() -> list[dict]:
     return tools
 
 
-class ClaudeBaselineAgent:
-    def __init__(self, model: str = DEFAULT_BASELINE_MODEL):
-        import anthropic
+def _make_client():
+    if not os.environ.get("ANTHROPIC_API_KEY") and os.environ.get("ANTHROPIC_VERTEX_PROJECT_ID"):
+        from anthropic import AnthropicVertex
 
-        self.client = anthropic.Anthropic()
+        return AnthropicVertex(
+            project_id=os.environ["ANTHROPIC_VERTEX_PROJECT_ID"],
+            region=os.environ.get("CLOUD_ML_REGION", "global"),
+        )
+    import anthropic
+
+    return anthropic.Anthropic()
+
+
+class ClaudeBaselineAgent:
+    def __init__(self, model: str = DEFAULT_BASELINE_MODEL, client=None):
+        self.client = client if client is not None else _make_client()
         self.model = model
         self.tools = _tool_definitions()
 
