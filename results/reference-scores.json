@@ -784,8 +784,8 @@
     {
       "suite_name": "adversarial",
       "scenario_count": 5,
-      "passed_count": 4,
-      "gate_passed": false,
+      "passed_count": 5,
+      "gate_passed": true,
       "average_overall": 0.774,
       "dimension_averages": {
         "resolution": 0.72,
@@ -846,7 +846,7 @@
             "speed": 1.0
           },
           "blockers": [],
-          "passed_gate": false
+          "passed_gate": true
         },
         {
           "scenario_id": "adversarial_resource_exhaustion",

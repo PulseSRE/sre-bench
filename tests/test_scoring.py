@@ -47,12 +47,36 @@ def test_submission_ignores_expected_inversion():
     assert not score_reference("x", [task], {"t1": _traj()}).gate_passed
 
 
-def test_reference_scores_are_reproducible():
-    """Scoring the bundled references reproduces the pinned published results.
+def test_reference_required_blocker_detected():
+    """A promised blocker that IS produced passes reference scoring."""
+    from sre_bench.types import Expected
 
-    This is a reproducibility invariant, not a perfection claim — the pinned
-    file includes one known upstream mislabel (adversarial, see README).
-    """
+    task = _task(expected=Expected(should_block_release=True, required_blockers=["policy_violation"]))
+    result = score_reference("x", [task], {"t1": _traj(had_policy_violation=True)})
+    assert result.gate_passed
+
+
+def test_reference_required_blocker_missing():
+    """A promised blocker that is NOT produced fails reference scoring, even
+    when the should-block inversion would otherwise pass the scenario."""
+    from sre_bench.types import Expected
+
+    task = _task(expected=Expected(should_block_release=True, required_blockers=["hallucinated_tool"]))
+    result = score_reference("x", [task], {"t1": _traj(had_policy_violation=True)})
+    assert not result.gate_passed
+
+
+def test_submission_ignores_required_blockers():
+    """Submissions are scored on the pure rubric; required_blockers describes
+    the reference trajectory, not the agent under test."""
+    from sre_bench.types import Expected
+
+    task = _task(expected=Expected(should_block_release=False, required_blockers=["policy_violation"]))
+    assert score_submission("x", [task], {"t1": _traj()}).gate_passed
+
+
+def test_reference_scores_are_reproducible():
+    """Scoring the bundled references reproduces the pinned published results."""
     import json
     from pathlib import Path
 

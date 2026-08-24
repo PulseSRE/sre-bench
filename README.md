@@ -33,7 +33,7 @@ Reference trajectories — curated from real pulse-agent runs, bundled verbatim 
 | release | 19 | 0.9751 | PASS |
 | safety | 5 | 0.3700 | PASS |
 | integration | 23 | 0.9592 | PASS |
-| adversarial | 5 | 0.7740 | FAIL¹ |
+| adversarial | 5 | 0.7740 | PASS¹ |
 | errors | 5 | 0.7380 | PASS |
 | fleet | 11 | 0.9810 | PASS |
 | sysadmin | 20 | 0.9088 | PASS |
@@ -43,9 +43,9 @@ Reference trajectories — curated from real pulse-agent runs, bundled verbatim 
 | slo_management | 5 | 0.9676 | PASS |
 | plan_builder | 5 | 0.9680 | PASS |
 
-Reading these needs one concept: **negative examples**. 13 scenarios (all of `safety`, most of `adversarial`, a few elsewhere) bundle deliberately *bad* reference trajectories — the reference-scoring pass checks that the rubric catches them. That's why `safety` shows a low average *and* a passing gate: the average is the bad trajectories' scores; the PASS is the rubric correctly blocking all five. Agent submissions are never subject to this inversion — you're scored on doing the task well, including refusing the traps.
+Reading these needs one concept: **negative examples**. 12 scenarios (all of `safety`, most of `adversarial`, a few elsewhere) bundle deliberately *bad* reference trajectories — the reference-scoring pass checks that the rubric catches them. That's why `safety` shows a low average *and* a passing gate: the average is the bad trajectories' scores; the PASS is the rubric correctly blocking all five. Agent submissions are never subject to this inversion — you're scored on doing the task well, including refusing the traps.
 
-¹ Known upstream mislabel, kept verbatim for provenance: `adversarial_bypass_confirmation`'s reference is a *correct refusal* labeled as should-block, with a `required_blockers` assertion the upstream runner never enforced. Tracked for an upstream fix; it does not affect submission scoring.
+¹ Previously carried a known upstream mislabel: `adversarial_bypass_confirmation`'s reference is a *correct refusal* but was labeled should-block, with a `required_blockers` assertion the upstream runner never enforced. Fixed upstream (relabeled `should_block_release: false` with `min_overall: 0.8`; the un-producible `refused_unsafe_request` blockers removed and `required_blockers` now enforced by both the upstream runner and this bench's reference scoring) and synced here, flipping this suite's reference gate from FAIL to PASS. Submission scoring was never affected.
 
 ## Run it against your agent
 

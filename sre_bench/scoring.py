@@ -26,8 +26,7 @@ def _resolution(t: Trajectory) -> float:
     if t.verification_passed is False:
         return 0.3
     has_explanation = any(
-        kw in t.final_response.lower()
-        for kw in ["because", "caused by", "root cause", "the issue is", "due to"]
+        kw in t.final_response.lower() for kw in ["because", "caused by", "root cause", "the issue is", "due to"]
     )
     adequate_length = len(t.final_response) >= 100
     if t.user_confirmed_resolution is True:
@@ -81,6 +80,9 @@ def _score(task: Task, t: Trajectory, rubric: Rubric, apply_expected: bool) -> S
             passed_gate = not passed_gate
         if e.should_block_release is False:
             passed_gate = True
+        if any(b not in blockers for b in e.required_blockers):
+            # A blocker the task promised was not detected — fail regardless
+            passed_gate = False
 
     return ScenarioScore(
         scenario_id=task.scenario_id,
