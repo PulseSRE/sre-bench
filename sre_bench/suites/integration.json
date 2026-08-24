@@ -1,0 +1,440 @@
+{
+  "suite_name": "integration",
+  "scenarios": [
+    {
+      "scenario_id": "integration_transient_api_recovery",
+      "category": "sre",
+      "description": "Recovers from transient K8s API failures with retries.",
+      "tool_calls": [
+        "list_pods",
+        "get_events",
+        "describe_pod"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 120,
+      "user_confirmed_resolution": true,
+      "final_response": "Transient API failures resolved after retries because connection recovered. Incident diagnosed and mitigation steps provided.",
+      "verification_passed": true,
+      "retry_attempts": 2,
+      "transient_failures": 2,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_partial_data_handling",
+      "category": "sre",
+      "description": "Handles missing fields and partial payloads gracefully.",
+      "tool_calls": [
+        "list_resources",
+        "get_node_metrics"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 70,
+      "user_confirmed_resolution": true,
+      "final_response": "Some metrics fields were unavailable because backend returned partial payloads. Provided conservative analysis and next verification steps.",
+      "verification_passed": true,
+      "retry_attempts": 1,
+      "transient_failures": 1,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_timeout_degradation",
+      "category": "sre",
+      "description": "Timeout path returns incomplete run and should fail reliability gate.",
+      "tool_calls": [
+        "get_prometheus_query"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 420,
+      "user_confirmed_resolution": false,
+      "final_response": "Query timed out and no further diagnostics were completed.",
+      "verification_passed": false,
+      "completed": false,
+      "retry_attempts": 3,
+      "transient_failures": 3,
+      "rollback_available": false,
+      "expected": {
+        "should_block_release": true
+      }
+    },
+    {
+      "scenario_id": "integration_critical_investigation_generated",
+      "category": "sre",
+      "description": "Critical finding triggers proactive read-only investigation and root-cause summary.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_events",
+        "get_pod_logs"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 95,
+      "user_confirmed_resolution": true,
+      "final_response": "Critical crashloop finding was investigated and root cause identified as missing ConfigMap key. Suggested fix provided with confidence.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_investigation_timeout_handled",
+      "category": "sre",
+      "description": "Investigation timeout is reported cleanly and does not break monitor loop.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 140,
+      "user_confirmed_resolution": false,
+      "final_response": "Investigation timed out, failure event was emitted, and monitor continued scanning subsequent findings.",
+      "verification_passed": true,
+      "retry_attempts": 1,
+      "transient_failures": 1,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_post_fix_verification_signal",
+      "category": "sre",
+      "description": "Completed action is verified on the next scan and status is attached to history.",
+      "tool_calls": [
+        "restart_deployment",
+        "list_resources"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 160,
+      "user_confirmed_resolution": true,
+      "final_response": "Auto-fix completed and next-scan verification marked action as verified with evidence attached in history.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": true
+    },
+    {
+      "scenario_id": "integration_daemonset_gap_detection",
+      "category": "sre",
+      "description": "Detect DaemonSet pods missing from nodes and diagnose scheduling failures.",
+      "tool_calls": [
+        "list_pods",
+        "list_resources",
+        "describe_resource",
+        "get_events"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 85,
+      "user_confirmed_resolution": true,
+      "final_response": "DaemonSet node-exporter is missing pods on 2 of 6 nodes because worker-3 has a taint that the DaemonSet does not tolerate and worker-5 has insufficient memory. Recommended adding a toleration or adjusting resource requests.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_rbac_audit_change_detection",
+      "category": "security",
+      "description": "Detect recent RBAC changes and assess risk of privilege escalation.",
+      "tool_calls": [
+        "get_recent_changes",
+        "scan_rbac_risks",
+        "get_events"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 75,
+      "user_confirmed_resolution": true,
+      "final_response": "Detected 3 RBAC changes in the last hour: a ClusterRoleBinding granting cluster-admin to a service account was added, which is a critical privilege escalation risk. Two RoleBindings in staging were also modified. Recommend immediate review of the cluster-admin binding.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_incident_correlation_timeline",
+      "category": "sre",
+      "description": "Correlate multiple signals into a single incident timeline.",
+      "tool_calls": [
+        "get_firing_alerts",
+        "get_events",
+        "correlate_incident",
+        "get_pod_logs"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 110,
+      "user_confirmed_resolution": true,
+      "final_response": "Timeline reconstructed: at 14:02 a ConfigMap update triggered a rolling restart, at 14:04 pods failed readiness probes due to bad config, at 14:06 alerts fired for KubePodCrashLooping. Root cause is the ConfigMap change. All events correlated to a single incident.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_hpa_thrashing_diagnosis",
+      "category": "sre",
+      "description": "Diagnose HPA oscillation and recommend stable scaling parameters.",
+      "tool_calls": [
+        "list_hpas",
+        "analyze_hpa_thrashing",
+        "get_prometheus_query",
+        "get_events"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 90,
+      "user_confirmed_resolution": true,
+      "final_response": "HPA for api-gateway is thrashing between 3 and 8 replicas every 2 minutes because the CPU target (50%) is too aggressive for bursty traffic. Recommended increasing stabilization window to 300s and raising target to 70%.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_warning_events_triage",
+      "category": "sre",
+      "description": "Triage cluster warning events and identify actionable patterns.",
+      "tool_calls": [
+        "get_events",
+        "list_pods",
+        "describe_pod"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 65,
+      "user_confirmed_resolution": true,
+      "final_response": "14 warning events in the last hour, grouped into 3 patterns: 4x FailedMount (secret not found in openshift-monitoring), 6x BackOff (crashlooping alertmanager pods), 4x FailedScheduling (insufficient memory on worker-2). Recommended: fix the missing secret first (blocks monitoring stack), then address node memory pressure.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_auth_anomaly_detection",
+      "category": "security",
+      "description": "Detect authentication anomalies and assess unauthorized access risk.",
+      "tool_calls": [
+        "get_events",
+        "scan_rbac_risks",
+        "get_recent_changes"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 70,
+      "user_confirmed_resolution": true,
+      "final_response": "Detected 3 authentication anomalies: 12 failed API auth attempts from IP 10.0.5.99 in 5 minutes (possible brute force), 1 successful auth with a service account not used in 90 days (stale credential), and 2 token refresh failures from the CI pipeline. Recommended: rotate the stale SA credential immediately, investigate the failed auth source, and check CI token expiry.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_all_component_types_view",
+      "category": "sre",
+      "description": "Create a view that uses every component type available.",
+      "tool_calls": [
+        "list_pods",
+        "list_resources",
+        "get_node_metrics",
+        "get_pod_metrics",
+        "get_prometheus_query",
+        "get_events",
+        "describe_pod",
+        "create_dashboard"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 180,
+      "user_confirmed_resolution": true,
+      "final_response": "Created a comprehensive showcase view with all 10 component types: data_table (pods list), info_card_grid (cluster health cards), chart (CPU/memory time series), status_list (node conditions), badge_list (namespace labels), key_value (deployment details), relationship_tree (deployment\u2192replicaset\u2192pod hierarchy), tabs (grouped views), grid (side-by-side layout), and section (collapsible details). All components populated with real cluster data.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_parallel_sre_security",
+      "category": "sre",
+      "description": "Compound SRE+Security query triggers parallel multi-skill execution and synthesis.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_pod_logs",
+        "scan_rbac_risks",
+        "get_security_summary"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 90,
+      "user_confirmed_resolution": true,
+      "final_response": "Parallel analysis complete. SRE: pods crashlooping due to missing ConfigMap key 'DB_HOST'. Security: default service account has cluster-admin binding \u2014 critical RBAC risk. Both issues in production namespace require immediate attention.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_multi_skill_empty_output_fallback",
+      "category": "sre",
+      "description": "One skill times out during parallel execution \u2014 synthesis is skipped, non-empty output used with warning.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_pod_logs"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 135,
+      "user_confirmed_resolution": true,
+      "final_response": "Note: security skill did not return results. SRE analysis: pods crashlooping due to OOM kill. Memory limit of 256Mi is insufficient for current workload. Recommended increasing to 512Mi.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 1,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_multi_skill_conflict_detection",
+      "category": "sre",
+      "description": "Parallel skills produce conflicting diagnoses that are surfaced for human arbitration.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_pod_logs",
+        "get_events",
+        "scan_pod_security"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 95,
+      "user_confirmed_resolution": true,
+      "final_response": "Conflict detected: SRE skill attributes pod restarts to OOM kills while security skill attributes them to a restrictive SecurityContextConstraint rejecting the container. Both findings require investigation \u2014 check memory limits AND SCC assignments.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_compound_intent_routing",
+      "category": "sre",
+      "description": "Compound query with 'and also' correctly splits into two skill domains.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "get_firing_alerts",
+        "scan_rbac_risks"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 80,
+      "user_confirmed_resolution": true,
+      "final_response": "Investigated both concerns in parallel. SRE: 3 pods crashlooping in production due to failing readiness probes. Security: RBAC audit found 2 high-risk bindings \u2014 default SA has cluster-admin. Actionable recommendations provided for each domain.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_multi_skill_orca_score_gap",
+      "category": "sre",
+      "description": "Natural cross-domain query triggers multi-skill via ORCA score gap without explicit compound syntax.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "get_events",
+        "scan_rbac_risks",
+        "scan_pod_security"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 85,
+      "user_confirmed_resolution": true,
+      "final_response": "Parallel analysis: SRE found pods crashing due to OOM kills \u2014 memory limits too low for current load. Security found RBAC misconfigurations \u2014 default service account has excessive permissions. Both issues require attention.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_multi_skill_implicit_crossdomain",
+      "category": "sre",
+      "description": "Implicit cross-domain query (mentions security policy change) activates both SRE and security skills.",
+      "tool_calls": [
+        "get_firing_alerts",
+        "get_events",
+        "list_pods",
+        "scan_pod_security",
+        "get_recent_changes"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 90,
+      "user_confirmed_resolution": true,
+      "final_response": "Cluster instability correlated with recent security policy change. SRE: 4 pods failing admission due to new restricted SCC. Security: policy change is correct but missing toleration for monitoring workloads. Recommended adding exemption for monitoring namespace.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_single_skill_stays_single",
+      "category": "sre",
+      "description": "Pure single-domain SRE query does NOT activate multi-skill \u2014 control case.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_pod_logs",
+        "get_events"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 55,
+      "user_confirmed_resolution": true,
+      "final_response": "Pods crashlooping due to missing ConfigMap key. Root cause identified and fix recommended.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_inbox_action_plan_step_execution",
+      "category": "sre",
+      "description": "Execute an inbox action plan step \u2014 agent uses the suggested tool and reports results for step completion.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "describe_pod"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 60,
+      "user_confirmed_resolution": true,
+      "final_response": "Executed step 'Check pod status': found 2 crashlooping pods in production namespace. Logs show OOMKilled errors. Ready for the next step \u2014 increase memory limits.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": false
+    },
+    {
+      "scenario_id": "integration_inbox_action_plan_multi_step",
+      "category": "sre",
+      "description": "Complete multiple action plan steps sequentially \u2014 each step uses correct tools and reports progress.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "get_prometheus_query",
+        "scale_deployment"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 120,
+      "user_confirmed_resolution": true,
+      "final_response": "All 3 action plan steps completed: (1) diagnosed OOM crashloop via pod logs, (2) confirmed memory pressure via Prometheus metrics, (3) scaled deployment to 4 replicas with increased memory limits. Pods now running healthy.",
+      "verification_passed": true,
+      "retry_attempts": 0,
+      "transient_failures": 0,
+      "rollback_available": true
+    },
+    {
+      "scenario_id": "integration_inbox_action_plan_step_failure",
+      "category": "sre",
+      "description": "Action plan step fails gracefully \u2014 agent reports failure and suggests retry or alternative approach.",
+      "tool_calls": [
+        "scale_deployment",
+        "get_pod_metrics",
+        "describe_resource",
+        "list_pods"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 45,
+      "user_confirmed_resolution": true,
+      "final_response": "Step 'Scale deployment' failed: insufficient cluster capacity to scale to 8 replicas. Worker nodes are at 92% CPU utilization. Recommend either scaling the node pool first or reducing replica count to 4.",
+      "verification_passed": null,
+      "retry_attempts": 1,
+      "transient_failures": 0,
+      "rollback_available": false
+    }
+  ],
+  "description": "Cross-tool workflows testing error recovery, partial data handling, timeouts, post-fix verification, parallel multi-skill execution, and inbox action plan step execution"
+}

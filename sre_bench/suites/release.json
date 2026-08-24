@@ -1,0 +1,353 @@
+{
+  "suite_name": "release",
+  "scenarios": [
+    {
+      "scenario_id": "release_crashloop_triage_fix",
+      "category": "sre",
+      "description": "Resolve crashloop via logs + safe restart with verification.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "describe_pod",
+        "restart_deployment"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 65,
+      "user_confirmed_resolution": true,
+      "final_response": "CrashLoopBackOff was caused by bad env configuration because startup logs showed validation failure. Restart succeeded and readiness is green.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_pending_pod_capacity_recommendation",
+      "category": "sre",
+      "description": "Pending pod diagnosis with actionable recommendation.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "list_resources",
+        "get_node_metrics"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 95,
+      "user_confirmed_resolution": true,
+      "final_response": "Pod remained pending due to CPU pressure because node allocatable capacity is exhausted. Recommend scaling workers or lowering requests, then recheck scheduling.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 1,
+      "transient_failures": 1
+    },
+    {
+      "scenario_id": "release_security_rbac_least_privilege",
+      "category": "security",
+      "description": "RBAC audit with least-privilege recommendation.",
+      "tool_calls": [
+        "scan_rbac_risks",
+        "get_security_summary"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 60,
+      "user_confirmed_resolution": true,
+      "final_response": "Found wildcard verbs in non-system role bindings because service accounts were granted cluster-admin. Recommend replacing with scoped roles and namespace-specific bindings.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_network_policy_gap",
+      "category": "security",
+      "description": "Detect missing namespace policies and suggest safe deny-all baseline.",
+      "tool_calls": [
+        "scan_network_policies",
+        "list_resources"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 58,
+      "user_confirmed_resolution": true,
+      "final_response": "Several namespaces had no baseline NetworkPolicy because policy coverage is incomplete. Recommend staged deny-all + explicit allow rules for critical traffic paths.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_failed_deployment_recovery",
+      "category": "sre",
+      "description": "Recover degraded deployment with restart and verification.",
+      "tool_calls": [
+        "list_resources",
+        "describe_resource",
+        "restart_deployment"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 72,
+      "user_confirmed_resolution": true,
+      "final_response": "Deployment was degraded because one replica was stuck on stale configuration. Rolling restart restored healthy replicas and readiness passed.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_node_pressure_triage",
+      "category": "sre",
+      "description": "Identify node pressure and provide actionable workload mitigation.",
+      "tool_calls": [
+        "list_resources",
+        "describe_resource",
+        "get_node_metrics",
+        "list_pods"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 96,
+      "user_confirmed_resolution": true,
+      "final_response": "Node memory pressure was triggered because burst workloads exceeded limits on a small worker pool. Recommended temporary scale-out and right-sizing requests for noisy deployments.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 1,
+      "transient_failures": 1
+    },
+    {
+      "scenario_id": "release_cert_expiry_warning",
+      "category": "security",
+      "description": "Detect certificate nearing expiry and suggest renewal sequence.",
+      "tool_calls": [
+        "get_tls_certificates",
+        "list_routes"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 64,
+      "user_confirmed_resolution": true,
+      "final_response": "Router certificate is expiring soon because remaining lifetime is below policy threshold. Recommended renewal and staged validation across ingress endpoints.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_alert_correlation",
+      "category": "sre",
+      "description": "Correlate firing alert to affected workload and root cause.",
+      "tool_calls": [
+        "get_firing_alerts",
+        "get_events",
+        "describe_pod",
+        "get_pod_logs"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 110,
+      "user_confirmed_resolution": true,
+      "final_response": "Firing alert mapped to application pods failing readiness because dependency DNS lookup timed out. Suggested immediate DNS check and controlled restart after dependency recovery.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 1,
+      "transient_failures": 1
+    },
+    {
+      "scenario_id": "release_gitops_drift_guidance",
+      "category": "sre",
+      "description": "Detect GitOps drift and prefer declarative remediation path.",
+      "tool_calls": [
+        "detect_gitops_drift",
+        "propose_git_change"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 85,
+      "user_confirmed_resolution": true,
+      "final_response": "Resource drift was detected because live manifest diverged from Git. Recommended PR-based remediation so Argo can reconcile safely without manual patch drift.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_security_summary_actionable",
+      "category": "security",
+      "description": "Provide actionable prioritized security summary without unsafe claims.",
+      "tool_calls": [
+        "get_security_summary",
+        "scan_pod_security",
+        "scan_images"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 78,
+      "user_confirmed_resolution": true,
+      "final_response": "Top risks were privileged workloads and unpinned images because multiple pods ran broad security contexts and latest tags. Prioritized immediate containment and medium-term hardening actions.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_quota_exhaustion_plan",
+      "category": "sre",
+      "description": "Diagnose quota exhaustion and provide clear recovery plan.",
+      "tool_calls": [
+        "list_resources",
+        "list_pods"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 90,
+      "user_confirmed_resolution": true,
+      "final_response": "Namespace quota was exhausted because pending pods could not reserve requested resources. Proposed cleanup + temporary quota bump + rightsizing follow-up.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_showcase_all_component_types",
+      "category": "sre",
+      "description": "Create a view that uses every component type including Phase 2 investigation components.",
+      "tool_calls": [
+        "get_node_metrics",
+        "get_pod_metrics",
+        "get_prometheus_query",
+        "get_events",
+        "get_topology_graph",
+        "emit_component",
+        "create_dashboard"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 120,
+      "user_confirmed_resolution": true,
+      "final_response": "Created a showcase dashboard with all component types populated with real cluster data: data_table, info_card_grid, chart, status_list, badge_list, key_value, relationship_tree, tabs, grid, section, confidence_badge, resolution_tracker, blast_radius, and action_button. Dashboard saved and accessible from Views.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_rollback_bad_deployment",
+      "category": "sre",
+      "description": "Rollback a broken deployment to last known good revision with verification.",
+      "tool_calls": [
+        "list_resources",
+        "describe_resource",
+        "get_pod_logs",
+        "rollback_deployment",
+        "list_pods"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 78,
+      "user_confirmed_resolution": true,
+      "final_response": "Deployment checkout-service was rolled back to revision 3 because the latest image introduced a null pointer crash on startup. All 3 replicas are now healthy on the previous image tag.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_cross_agent_handoff",
+      "category": "sre",
+      "description": "SRE triage hands off to security scan when RBAC misconfiguration is the root cause.",
+      "tool_calls": [
+        "list_pods",
+        "get_pod_logs",
+        "get_events",
+        "request_security_scan"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 105,
+      "user_confirmed_resolution": true,
+      "final_response": "Pods were failing because the service account lacked permissions to read ConfigMaps after a recent RBAC change. Handed off to security agent which confirmed the role binding was removed. Recommended restoring the binding with least-privilege scope.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_image_pull_error_resolution",
+      "category": "sre",
+      "description": "Diagnose and resolve image pull errors across multiple pods.",
+      "tool_calls": [
+        "list_pods",
+        "describe_pod",
+        "get_events",
+        "restart_deployment"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 70,
+      "user_confirmed_resolution": true,
+      "final_response": "Image pull failures were caused by an expired registry credential. After the pull secret was updated, a rolling restart restored all pods. Verified all replicas are pulling the correct image and running.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_view_clone_and_modify",
+      "category": "sre",
+      "description": "Clone an existing dashboard and modify it by removing and adding widgets.",
+      "tool_calls": [
+        "get_view_details",
+        "clone_dashboard",
+        "remove_widget_from_view",
+        "create_dashboard"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 95,
+      "user_confirmed_resolution": true,
+      "final_response": "Cloned the production overview dashboard, removed the network latency widget, and added a memory pressure chart. The new dashboard is saved as 'Staging Overview' and accessible from Views.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_multi_turn_rollback_verify",
+      "category": "sre",
+      "description": "Multi-turn: diagnose broken deploy, rollback, then verify healthy \u2014 tests context retention across turns.",
+      "tool_calls": [
+        "describe_resource",
+        "get_pod_logs",
+        "rollback_deployment",
+        "list_pods"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 75,
+      "user_confirmed_resolution": true,
+      "final_response": "Checkout service v5.0.0 failed because the payments-v2 API endpoint was removed. Rolled back to revision 7 (v4.9.0). All 3 replicas are now running and healthy.",
+      "verification_passed": true,
+      "rollback_available": true,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_physical_topology",
+      "category": "sre",
+      "description": "Generate physical topology showing hardware utilization with metrics.",
+      "tool_calls": [
+        "get_topology_graph"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 15,
+      "user_confirmed_resolution": true,
+      "final_response": "Physical topology shows 3 nodes with 12 pods. worker-1 is at 78% CPU and 65% memory, worker-2 at 42% CPU. No hardware overload detected but worker-1 is approaching capacity.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    },
+    {
+      "scenario_id": "release_network_topology",
+      "category": "sre",
+      "description": "Generate network flow topology for connectivity debugging.",
+      "tool_calls": [
+        "get_topology_graph"
+      ],
+      "rejected_tools": 0,
+      "duration_seconds": 12,
+      "user_confirmed_resolution": true,
+      "final_response": "Network topology for production: Route web-route routes to Service web-svc which selects 3 pods. NetworkPolicy deny-all applies to all pods. No connectivity issues.",
+      "verification_passed": true,
+      "rollback_available": false,
+      "retry_attempts": 0,
+      "transient_failures": 0
+    }
+  ],
+  "description": "End-to-end SRE and security scenarios that must pass before shipping a release"
+}
