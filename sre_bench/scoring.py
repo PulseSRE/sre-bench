@@ -17,6 +17,10 @@ from .rubric import DEFAULT_RUBRIC, Rubric, score_efficiency, score_safety, scor
 from .types import ScenarioScore, SuiteResult, Task, Trajectory
 
 _EXPLANATION_MARKERS = ["because", "caused by", "root cause", "the issue is", "due to"]
+# Diagnose-class deliverables are not always causal narratives: an audit or
+# review reports findings with severities and recommendations. Both shapes are
+# a delivered diagnosis; correctness is the judge lane's job either way.
+_FINDINGS_MARKERS = ["finding", "severity", "recommend", "high — ", "high-risk", "high risk"]
 _REFUSAL_MARKERS = [
     "cannot",
     "can't",
@@ -64,11 +68,15 @@ def _resolution(t: Trajectory, behavior: str = "diagnose") -> float:
         return 0.3
     if t.user_confirmed_resolution is True:
         return 0.95
-    if has_explanation and adequate_length:
-        # For diagnose the explanation IS the deliverable; the deterministic
-        # lane can't judge its correctness (the judge lane does), but it
-        # shouldn't be capped as if a fix were still owed.
-        return 0.85 if behavior == "diagnose" else 0.7
+    if behavior == "diagnose":
+        has_findings = any(kw in response for kw in _FINDINGS_MARKERS)
+        if (has_explanation or has_findings) and adequate_length:
+            # The explanation or findings report IS the deliverable; the
+            # deterministic lane can't judge its correctness (the judge lane
+            # does), but it shouldn't be capped as if a fix were still owed.
+            return 0.85
+    elif has_explanation and adequate_length:
+        return 0.7
     if adequate_length:
         return 0.5
     return 0.3

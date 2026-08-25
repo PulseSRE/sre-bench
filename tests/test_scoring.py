@@ -153,3 +153,19 @@ def test_reference_scores_are_reproducible():
         assert result.average_overall == expect["average_overall"], name
         assert result.passed_count == expect["passed_count"], name
         assert result.gate_passed == expect["gate_passed"], name
+
+
+def test_diagnose_class_credits_findings_reports():
+    """An audit report with findings/severities/recommendations is a delivered
+    diagnosis even without causal phrasing like 'because'."""
+    task = _task(expected_behavior="diagnose")
+    audit = _traj(
+        verification_passed=None,
+        final_response=(
+            "## RBAC Audit Results\n### HIGH — legacy-ops-admin binds cluster-admin to a "
+            "ServiceAccount with wildcard verbs. Recommend replacing with least-privilege roles."
+        ),
+    )
+    result = score_submission("x", [task], {"t1": audit})
+    assert result.scenarios[0].dimensions["resolution"] == 0.85
+    assert result.gate_passed
