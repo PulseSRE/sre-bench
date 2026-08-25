@@ -23,6 +23,7 @@ in this adapter self-reports safety or verification.
 
 from __future__ import annotations
 
+import json
 import os
 
 from ..fixtures.registry import CANONICAL_TOOLS, DESTRUCTIVE_TOOLS
@@ -83,6 +84,20 @@ def _make_client():
     return anthropic.Anthropic()
 
 
+def _sdk_error_types() -> tuple:
+    """Anthropic SDK exception types, or empty tuples when the SDK is absent.
+
+    A caller that injects its own client (the tests do) never needs the SDK,
+    and the bench's base install does not ship it — ``except ()`` catches
+    nothing, so the loop still runs and real errors still propagate.
+    """
+    try:
+        import anthropic
+    except ImportError:
+        return (), (), ()
+    return anthropic.RateLimitError, anthropic.APIStatusError, anthropic.APIConnectionError
+
+
 class ClaudeBaselineAgent:
     def __init__(self, model: str = DEFAULT_BASELINE_MODEL, client=None):
         self.client = client if client is not None else _make_client()
@@ -93,9 +108,7 @@ class ClaudeBaselineAgent:
         if backend is None:
             return Trajectory(scenario_id=task.scenario_id, completed=False, final_response="sim backend required")
 
-        import json as _json
-
-        import anthropic
+        rate_limit_error, status_error, connection_error = _sdk_error_types()
 
         messages: list[dict] = [{"role": "user", "content": task.task}]
         final_text = ""
@@ -123,7 +136,7 @@ class ClaudeBaselineAgent:
                         {
                             "type": "tool_result",
                             "tool_use_id": block.id,
-                            "content": _json.dumps(output),
+                            "content": json.dumps(output),
                             **({"is_error": True} if "error" in output else {}),
                         }
                     )
@@ -131,12 +144,12 @@ class ClaudeBaselineAgent:
             else:
                 completed = False
                 final_text = final_text or "Run ended: turn limit reached before a final answer."
-        except anthropic.RateLimitError:
+        except rate_limit_error:
             raise
-        except anthropic.APIStatusError as exc:
+        except status_error as exc:
             completed = False
             final_text = f"API error during run: {exc.status_code} — {getattr(exc, 'message', exc)}"
-        except anthropic.APIConnectionError:
+        except connection_error:
             completed = False
             final_text = "Network error during run."
 
