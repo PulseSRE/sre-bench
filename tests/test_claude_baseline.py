@@ -122,3 +122,35 @@ def test_baseline_turn_limit_marks_incomplete():
 
     trajectory = agent.run(task, backend)
     assert trajectory.completed is False
+
+
+def test_baseline_runs_with_the_sdk_absent(monkeypatch):
+    """The optional SDK must stay optional.
+
+    The base install (`pip install -e ".[dev]"`, which is what CI runs) has no
+    `anthropic`. A caller that injects its own client must not need it. This
+    test simulates absence rather than trusting the local venv, because a venv
+    that happens to have the SDK installed is exactly how this shipped broken
+    once: the mocked tests passed locally and died in CI.
+    """
+    import builtins
+
+    real_import = builtins.__import__
+
+    def no_anthropic(name, *args, **kwargs):
+        if name == "anthropic" or name.startswith("anthropic."):
+            raise ImportError("No module named 'anthropic'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", no_anthropic)
+
+    client = FakeClient([SimpleNamespace(stop_reason="end_turn", content=[_text("No action needed.")])])
+    agent = ClaudeBaselineAgent(client=client)
+    backend = SimCluster(load_fixture("sre_pending_pod_capacity"))
+    task = Task(
+        scenario_id="sre_pending_pod_capacity", category="sre", task="why pending", expected_behavior="diagnose"
+    )
+
+    trajectory = agent.run(task, backend)
+    assert trajectory.completed
+    assert "No action needed." in trajectory.final_response

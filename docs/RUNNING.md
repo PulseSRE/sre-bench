@@ -115,6 +115,20 @@ sre-bench run --adapter myagent.bench:factory --suite core --out my.json --score
 
 `run_tasks` fills in `duration_seconds` for you when the adapter leaves it at 0.
 
+## Contributing
+
+Run the CI-parity check before pushing:
+
+```bash
+make ci
+```
+
+It builds a throwaway venv with exactly the extras CI installs (`.[dev]`, no
+optional `[judge]`/`[vertex]`) and runs ruff, the test suite and the reference
+gate there. Your own venv is not a reliable stand-in: an optional dependency
+that happens to be installed locally will hide a hard import in the base
+package, which is how a green local run once pushed a red CI.
+
 ## Publishing results
 
 Publish three things: the score output, the raw trajectory file, and one sentence on the environment the runs executed against. Scores without the trajectory file are demos, not benchmarks.
