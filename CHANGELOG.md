@@ -2,6 +2,13 @@
 
 All notable changes to SRE-Bench are documented in this file.
 
+## v0.4.0
+
+### `sre-bench durable` — evals for what survives
+- The bench scored trajectories; Pulse's durable execution makes claims no trajectory can witness (an approval gate that really waits, a cancel that stops a parked run, a failure that still records a verdict, a listing that labels its rows). The new command probes a live agent's durable endpoints and holds every check to the bench's own standard: a pass requires affirmative evidence — COMPLETED alone proves nothing, and the vanishing-verdict bug shape (pulse-agent v2.29.1) is a permanent tripwire
+- The probe plan is one approval-gated phase and the probes deny it, so the suite costs no LLM tokens and runs on every release; the in-pod apply-failure probe FAILS rather than skips when `sre_agent` is unavailable, because a skipped regression check is the regression check that never existed
+- Proved itself on its first live run: the create-plan probe surfaced a real 500 — pulse-agent wrote runtime plan YAML into the read-only package directory, so creating plans from the UI had been broken on-cluster while every local test passed (fixed in pulse-agent v2.31.0). The second run, against the fix, passed clean
+
 ## v0.3.1
 
 ### Credit a diagnosis delivered as findings, not only as narration
