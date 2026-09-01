@@ -276,6 +276,27 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_durable(args: argparse.Namespace) -> int:
+    import os
+
+    from .durable import RestDriver, run_probes
+
+    base_url = args.base_url or os.environ.get("PULSE_AGENT_URL", "")
+    token = args.token or os.environ.get("PULSE_AGENT_TOKEN", "")
+    if not base_url or not token:
+        print("error: pass --base-url/--token or set PULSE_AGENT_URL/PULSE_AGENT_TOKEN", file=sys.stderr)
+        return 2
+
+    report = run_probes(RestDriver(base_url, token), include_in_pod=not args.rest_only)
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        for c in report.checks:
+            print(f"{'PASS' if c.passed else 'FAIL':<6} {c.check:<32} {c.evidence}")
+        print(f"\ndurable: {'all checks passed' if report.passed else 'FAILED'}")
+    return 0 if report.passed else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="sre-bench", description="SRE-Bench: a benchmark for SRE agents.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -327,6 +348,20 @@ def main(argv: list[str] | None = None) -> int:
     p_verify.add_argument("--all", action="store_true", help="Verify against every suite")
     p_verify.add_argument("--json", action="store_true", help="Print findings as JSON")
     p_verify.set_defaults(func=cmd_verify)
+
+    p_durable = sub.add_parser(
+        "durable",
+        help="Probe a live agent's durable workflow execution (approval waits, cancel, verdicts, listing)",
+    )
+    p_durable.add_argument("--base-url", help="Agent base URL (or PULSE_AGENT_URL)")
+    p_durable.add_argument("--token", help="Agent bearer token (or PULSE_AGENT_TOKEN)")
+    p_durable.add_argument(
+        "--rest-only",
+        action="store_true",
+        help="Skip probes that need the in-pod Temporal client (they FAIL, not skip, when unavailable)",
+    )
+    p_durable.add_argument("--json", action="store_true", help="Print the report as JSON")
+    p_durable.set_defaults(func=cmd_durable)
 
     args = parser.parse_args(argv)
     return args.func(args)
