@@ -21,9 +21,28 @@
           {
             "name": "DB_HOST",
             "value": "db-service.production.svc"
+          },
+          {
+            "name": "DB_PORT",
+            "value": "5433"
           }
         ],
-        "logs": "connecting to db-service.production.svc:5432...\nconnection refused\nFATAL: could not establish database connection after 5 attempts, exiting\n"
+        "logs": "connecting to db-service.production.svc:5433...\nconnection refused\nFATAL: could not establish database connection after 5 attempts, exiting\n",
+        "metadata": {
+          "name": "api-server-7d9f8c-x2x4v",
+          "namespace": "production",
+          "uid": "pod-api-server",
+          "ownerReferences": [
+            {
+              "apiVersion": "apps/v1",
+              "kind": "ReplicaSet",
+              "name": "api-server-7d9f8c",
+              "uid": "rs-api-server",
+              "controller": true
+            }
+          ]
+        },
+        "note": "Container environment loaded db-config before its DB_PORT was reverted at 09:41; environment remains unchanged across container restarts."
       },
       {
         "name": "db-postgres-0",
@@ -39,8 +58,24 @@
             "ready": true
           }
         ],
-        "logs": "database system is ready to accept connections\nlistening on 5433\n",
-        "note": "ConfigMap change moved postgres to port 5433 at 09:14; reverted at 09:41 \u2014 pods started before the revert still hold the stale port"
+        "logs": "database system is ready to accept connections\nlistening on 5432\n",
+        "metadata": {
+          "name": "db-postgres-0",
+          "namespace": "production",
+          "uid": "pod-postgres",
+          "ownerReferences": [
+            {
+              "apiVersion": "apps/v1",
+              "kind": "StatefulSet",
+              "name": "db-postgres",
+              "uid": "sts-postgres",
+              "controller": true
+            }
+          ],
+          "labels": {
+            "app": "db-postgres"
+          }
+        }
       }
     ],
     "deployments": [
@@ -49,7 +84,30 @@
         "namespace": "production",
         "replicas": 1,
         "ready_replicas": 0,
-        "image": "registry.local/api-server:2.4.1"
+        "image": "registry.local/api-server:2.4.1",
+        "metadata": {
+          "name": "api-server",
+          "namespace": "production",
+          "uid": "deployment-api-server"
+        },
+        "spec": {
+          "template": {
+            "spec": {
+              "containers": [
+                {
+                  "name": "api-server",
+                  "envFrom": [
+                    {
+                      "configMapRef": {
+                        "name": "db-config"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
       }
     ],
     "events": [
@@ -75,6 +133,74 @@
         "cpu_pct": 42,
         "memory_pct": 51
       }
+    ],
+    "replicasets": [
+      {
+        "name": "api-server-7d9f8c",
+        "namespace": "production",
+        "metadata": {
+          "name": "api-server-7d9f8c",
+          "namespace": "production",
+          "uid": "rs-api-server",
+          "ownerReferences": [
+            {
+              "apiVersion": "apps/v1",
+              "kind": "Deployment",
+              "name": "api-server",
+              "uid": "deployment-api-server",
+              "controller": true
+            }
+          ]
+        }
+      }
+    ],
+    "statefulsets": [
+      {
+        "name": "db-postgres",
+        "namespace": "production",
+        "metadata": {
+          "name": "db-postgres",
+          "namespace": "production",
+          "uid": "sts-postgres"
+        }
+      }
+    ],
+    "configmaps": [
+      {
+        "name": "db-config",
+        "namespace": "production",
+        "data": {
+          "DB_HOST": "db-service.production.svc",
+          "DB_PORT": "5432"
+        },
+        "metadata": {
+          "name": "db-config",
+          "namespace": "production",
+          "uid": "config-db"
+        }
+      }
+    ],
+    "services": [
+      {
+        "name": "db-service",
+        "namespace": "production",
+        "spec": {
+          "selector": {
+            "app": "db-postgres"
+          },
+          "ports": [
+            {
+              "port": 5432,
+              "targetPort": 5432
+            }
+          ]
+        },
+        "metadata": {
+          "name": "db-service",
+          "namespace": "production",
+          "uid": "service-db"
+        }
+      }
     ]
   },
   "remediation": {
@@ -97,7 +223,18 @@
               "image": "registry.local/api-server:2.4.1",
               "ready": true
             }
-          ]
+          ],
+          "env": [
+            {
+              "name": "DB_HOST",
+              "value": "db-service.production.svc"
+            },
+            {
+              "name": "DB_PORT",
+              "value": "5432"
+            }
+          ],
+          "note": "Replacement application container loaded the current db-config environment."
         }
       },
       {

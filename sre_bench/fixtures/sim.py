@@ -226,6 +226,22 @@ class SimCluster:
     def _tool_get_events(self, args: dict) -> dict:
         return {"events": self._ns_filter(self.state.get("events", []), args)}
 
+    def _tool_describe_resource(self, args: dict) -> dict:
+        canned = self.fixture.get("responses", {}).get("describe_resource")
+        if canned is not None:
+            return copy.deepcopy(canned)
+        kinds = {
+            "pod": "pods", "deployment": "deployments", "replicaset": "replicasets",
+            "statefulset": "statefulsets", "daemonset": "daemonsets", "service": "services",
+            "configmap": "configmaps", "node": "nodes",
+        }
+        kind = str(args.get("kind", "")).lower()
+        section = kinds.get(kind, kind if kind in kinds.values() else "")
+        for obj in self._ns_filter(self.state.get(section, []), args):
+            if obj.get("name") == args.get("name"):
+                return copy.deepcopy(obj)
+        return {"error": _FAILURE_PAYLOADS["not_found"] | {"message": "requested resource not found"}}
+
     def _tool_list_resources(self, args: dict) -> dict:
         kind = args.get("kind", "nodes")
         return {kind: copy.deepcopy(self.state.get(kind, []))}
