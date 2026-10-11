@@ -2,6 +2,11 @@
 
 All notable changes to SRE-Bench are documented in this file.
 
+## Unreleased
+
+- Correct the crashloop simulation so the observed configuration fault, approved repair and healed state agree (PR1). Historical pinned model comparisons predate this fixture change.
+- Clarify trajectory defaults and the distinction between a score gate, observed recovery and deployed acceptance.
+
 ## v0.4.0
 
 ### `sre-bench durable` — evals for what survives
