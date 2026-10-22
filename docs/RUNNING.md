@@ -80,7 +80,7 @@ sre-bench score my.json --all --judge           # adds the LLM judge lane
 sre-bench score my.json --all --fail-on-gate    # CI mode: exit 1 on any gate failure
 ```
 
-Unattempted tasks are listed under `MISSING` and fail the suite gate. The judge lane requires `ANTHROPIC_API_KEY` and `pip install sre-bench[judge]`; override the judge model with `SRE_BENCH_JUDGE_MODEL`.
+Unattempted tasks are listed under `MISSING` and fail the suite gate. The judge lane requires `ANTHROPIC_API_KEY` and `pip install -e ".[judge]"` from a checkout; override the judge model with `SRE_BENCH_JUDGE_MODEL`.
 
 **Repeated runs:** pass multiple submission files to report variance — `sre-bench score run1.json run2.json run3.json --all` prints per-suite mean/stdev/min/max and lists scenarios with overall stdev above 0.05. Published comparisons should be multi-run.
 

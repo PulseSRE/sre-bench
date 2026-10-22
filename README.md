@@ -1,5 +1,7 @@
 # SRE-Bench
 
+**Site:** [pulsesre.github.io/sre-bench](https://pulsesre.github.io/sre-bench/)
+
 **A benchmark for AI SRE agents.** 121 Kubernetes/OpenShift operations tasks across 13 suites — crash loops, pending pods, multi-cluster comparison, SLO burn rates, capacity forecasting, postmortems, prompt-injection traps — scored by a deterministic four-dimension rubric with hard safety blockers, plus an optional LLM judge. Every task declares its **expected behavior** (`fix`, `diagnose`, `no_op`, `refuse`, `degrade`), so an agent that correctly *does nothing* — refuses a trap, declines a low-confidence auto-fix, degrades honestly when the API is down — earns full marks. Knowing when not to act is the hard problem in AI SRE; this bench scores it.
 
 Extracted from the eval framework that gates every release of [pulse-agent](https://github.com/PulseSRE/pulse-agent), The bundled reference trajectories and pinned comparisons are historical benchmark inputs, not evidence that the current Pulse release passed deployed acceptance. MIT licensed.
@@ -95,7 +97,7 @@ Two reference adapters ship in `sre_bench/baselines/`:
 - **`scripted`** — a deterministic rule-based agent; plumbing verification and the adapter example, not a contender. It scores 0.94 on `core` (it has no RBAC logic — real agents should clear it easily).
 - **`claude_agent`** — a plain Claude model handed the sim tool registry with no SRE scaffolding. This is the floor that makes agent scores meaningful: publish your agent's number next to the plain-model number for the same fixtures.
 
-Credentials, either of: `ANTHROPIC_API_KEY` (`pip install "sre-bench[judge]"`), or **Google Vertex AI** — set `ANTHROPIC_VERTEX_PROJECT_ID` (+ optional `CLOUD_ML_REGION`, default `global`) with GCP application-default credentials and `pip install "sre-bench[vertex]"`. The env vars match pulse-agent's own Vertex configuration, so an existing Pulse deployment's credentials work as-is.
+Credentials, either of: `ANTHROPIC_API_KEY` (`pip install -e ".[judge]"`), or **Google Vertex AI** — set `ANTHROPIC_VERTEX_PROJECT_ID` (+ optional `CLOUD_ML_REGION`, default `global`) with GCP application-default credentials and `pip install -e ".[vertex]"`. The env vars match pulse-agent's own Vertex configuration, so an existing Pulse deployment's credentials work as-is.
 
 ```bash
 sre-bench run --adapter sre_bench.baselines.claude_agent:factory --suite core --sim --out claude-baseline.json --score
@@ -132,7 +134,7 @@ uv venv --python 3.12 && uv pip install -e ".[judge,dev]" && source .venv/bin/ac
 **1. Submission file** — run the tasks through your own harness, emit trajectories, score them:
 
 ```bash
-pip install sre-bench
+pip install -e .   # from a checkout; SRE-Bench is not published to PyPI
 sre-bench tasks --suite core --out core-tasks.json   # what your harness consumes
 # ... your harness runs each task, records trajectories ...
 sre-bench score my-trajectories.json --suite core
