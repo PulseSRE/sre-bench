@@ -6,6 +6,7 @@ All notable changes to SRE-Bench are documented in this file.
 
 - Correct the crashloop simulation so the observed configuration fault, approved repair and healed state agree (PR1). Historical pinned model comparisons predate this fixture change.
 - Clarify trajectory defaults and the distinction between a score gate, observed recovery and deployed acceptance.
+- The Pages comparison now says its pinned runs predate the fixture correction, as the README already did, and both cite pulse-agent v2.35.0's score on the corrected fixtures.
 
 ## v0.4.0
 
