@@ -4,6 +4,11 @@ All notable changes to SRE-Bench are documented in this file.
 
 ## Unreleased
 
+## v0.4.1 (2026-11-12)
+
+**Scores are not comparable with v0.4.0 on `sre_crashloop_resolution`:** the fixture fix below changes what a correct run observes. Re-run a baseline before comparing.
+
+- `sre_bench.__version__` reports the package version. It had said 0.1.0 since v0.1.0.
 - **CI actions on Node 24.** GitHub has deprecated Node.js 20 for actions and was forcing these onto Node 24 with a warning on every run. Bumped to the current majors, the same ones pulse-operator already uses: `actions/checkout@v7`, `actions/setup-python@v7`, `actions/setup-node@v7`, `actions/upload-artifact@v7`, `docker/build-push-action@v7`, `docker/login-action@v4`, `pnpm/action-setup@v6` (each only where the repo uses it).
 
 - Correct the crashloop simulation so the observed configuration fault, approved repair and healed state agree (PR1). Historical pinned model comparisons predate this fixture change.

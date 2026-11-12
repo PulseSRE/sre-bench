@@ -8,7 +8,7 @@ from .rubric import DEFAULT_RUBRIC, Rubric
 from .scoring import score_reference, score_submission
 from .types import Expected, ScenarioScore, SuiteResult, Task, Trajectory
 
-__version__ = "0.1.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "DEFAULT_RUBRIC",
