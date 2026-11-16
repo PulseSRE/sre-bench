@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# The built-in GITHUB_TOKEN only reads the repository. A job that needs more
+# says so in its own permissions block.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
